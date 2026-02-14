@@ -1,19 +1,25 @@
 import './App.css';
+import logo from './assets/logo.png';
 
 function App() {
   return (
     <div className="app">
       <header className="site-header">
         <div className="brand">
-          <div className="brand-mark">TB</div>
+          <div className="brand-mark">
+            <img src={logo} alt="TongueBridge logo" />
+          </div>
+
           <span className="brand-name">TongueBridge</span>
         </div>
         <nav className="nav">
           <a href="#features">Features</a>
-          <a href="#demo">Try it</a>
           <a href="#about">About</a>
         </nav>
-        <button className="btn ghost">Sign in</button>
+        <div className="header-actions">
+          <button className="btn ghost">Sign in</button>
+          <button className="btn primary">Go Premium</button>
+        </div>
       </header>
 
       <main>
@@ -30,7 +36,7 @@ function App() {
               <button className="btn ghost">See examples</button>
             </div>
             <div className="badges">
-              <span>120+ languages</span>
+              <span>Multi languages</span>
               <span>Context aware</span>
               <span>Privacy first</span>
             </div>
@@ -81,6 +87,43 @@ function App() {
             <h3>Fast & steady</h3>
             <p>Results show in seconds, even on slow connections.</p>
           </article>
+        </section>
+
+        <section className="pricing" id="pricing">
+          <div className="pricing-header">
+            <h2>Premium plans that scale with you</h2>
+            <p>
+              Start free, then upgrade when you want tone controls, saved phrases,
+              and richer language nuance.
+            </p>
+          </div>
+          <div className="pricing-cards">
+            <article className="pricing-card">
+              <h3>Free</h3>
+              <p className="price">$0</p>
+              <p className="plan-note">Everyday translations and basic tone.</p>
+              <button className="btn ghost">Keep free</button>
+            </article>
+            <article className="pricing-card highlight">
+              <span className="chip">Most popular</span>
+              <h3>Premium</h3>
+              <p className="price">
+                $12<span>/mo</span>
+              </p>
+              <p className="plan-note">
+                Pro tone controls, phrase library, and private history.
+              </p>
+              <button className="btn primary">Go Premium</button>
+            </article>
+            <article className="pricing-card">
+              <h3>Team</h3>
+              <p className="price">
+                $24<span>/mo</span>
+              </p>
+              <p className="plan-note">Shared glossaries and admin controls.</p>
+              <button className="btn ghost">Contact sales</button>
+            </article>
+          </div>
         </section>
 
         <section className="split" id="about">

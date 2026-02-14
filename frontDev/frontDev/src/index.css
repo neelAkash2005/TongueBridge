@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Space+Grotesk:wght@400;600&display=swap');
 
+html, body {
+  height: 100%;
+}
+
 :root {
   font-family: 'Space Grotesk', sans-serif;
   line-height: 1.6;
@@ -20,18 +24,33 @@
 
 body {
   margin: 0;
-  min-width: 320px;
+  position: relative;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 20% 20%, #fff2d8 0, transparent 45%),
-    radial-gradient(circle at 80% 10%, #f7d6c4 0, transparent 40%),
-    linear-gradient(180deg, #f9f3ee 0%, #f6eee7 100%);
+  background-color: var(--sand);
+  background-image: url("./assets/bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(250, 244, 238, 0.86), rgba(250, 244, 238, 0.7));
+  z-index: 0;
 }
 
 #root {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem 2rem;
+  margin: 1.5rem auto 2rem;
+  padding: 2.5rem 2.5rem 3rem;
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 252, 248, 0.9);
+  border-radius: 28px;
+  box-shadow: 0 30px 70px rgba(20, 16, 12, 0.15);
 }
 
 a {
@@ -47,4 +66,12 @@ main {
 
 p {
   margin: 0;
+}
+
+@media (max-width: 720px) {
+  #root {
+    margin: 0;
+    border-radius: 0;
+    padding: 2rem 1.5rem 2.5rem;
+  }
 }

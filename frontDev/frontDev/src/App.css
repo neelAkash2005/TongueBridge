@@ -1,5 +1,5 @@
 .app {
-  color: var(--ink);
+  min-height: 100vh;
 }
 
 .site-header {
@@ -17,15 +17,30 @@
 }
 
 .brand-mark {
-  height: 40px;
-  width: 40px;
+  height: 50px;
+  width: 50px;
   border-radius: 12px;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  background: linear-gradient(140deg, #f3d7a2, #e8876b);
-  color: #2a1b12;
-  box-shadow: 0 10px 24px rgba(232, 135, 107, 0.35);
+  overflow: hidden;
+  cursor: pointer;
+
+  /* glow */
+  box-shadow: 0 0 12px rgba(232, 135, 107, 0.5);
+
+  transition: all 0.3s ease;
+}
+
+/* hover glow + pop */
+.brand-mark:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 22px rgba(232, 135, 107, 0.9);
+}
+
+/* IMAGE FITTING */
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .brand-name {
@@ -46,6 +61,12 @@
 
 .nav a:hover {
   opacity: 1;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .btn {
@@ -94,11 +115,13 @@
   font-size: 0.75rem;
   font-weight: 600;
   opacity: 0.65;
+  margin-bottom: 20px;
 }
 
 .lead {
   font-size: 1.1rem;
   max-width: 520px;
+  margin-bottom: 32px;
 }
 
 .hero-actions {
@@ -110,10 +133,11 @@
 
 .badges {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.9rem;
   flex-wrap: wrap;
   font-size: 0.9rem;
   opacity: 0.7;
+  margin-top: 3rem
 }
 
 .hero-card {
@@ -187,6 +211,80 @@ textarea {
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(15, 18, 33, 0.08);
+}
+
+.pricing {
+  margin-bottom: 3.5rem;
+}
+
+.pricing-header {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 560px;
+  margin-bottom: 2rem;
+}
+
+.pricing-header h2 {
+  font-family: 'Fraunces', serif;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.pricing-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.pricing-card {
+  position: relative;
+  padding: 1.75rem;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(15, 18, 33, 0.08);
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pricing-card h3 {
+  margin: 0;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.price span {
+  font-size: 1rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.plan-note {
+  margin: 0;
+  opacity: 0.75;
+}
+
+.pricing-card.highlight {
+  background: #fff0dd;
+  border-color: rgba(232, 135, 107, 0.35);
+  box-shadow: 0 18px 35px rgba(232, 135, 107, 0.2);
+}
+
+.chip {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  background: #f3b67c;
+  color: #2a1b12;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 700;
 }
 
 .split {
