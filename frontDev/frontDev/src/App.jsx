@@ -13,7 +13,7 @@ function App() {
           <span className="brand-name">TongueBridge</span>
         </div>
         <nav className="nav">
-          <a href="#features">Features</a>
+          <a href="#features">Explore Features</a>
           <a href="#about">About</a>
         </nav>
         <div className="header-actions">
@@ -32,8 +32,8 @@ function App() {
               Perfect for everyday chats, work conversations, and travel moments
             </p>
             <div className="hero-actions">
-              <button className="btn primary">Start translating</button>
-              <button className="btn ghost">See examples</button>
+              <button className="btn primary">Get Started</button>
+              <button className="btn ghost">Learn More</button>
             </div>
             <div className="badges">
               <span>Multi languages</span>

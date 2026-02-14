@@ -50,7 +50,7 @@
 
 .nav {
   display: flex;
-  gap: 1.25rem;
+  gap: 4rem;
   font-size: 0.95rem;
 }
 
@@ -87,12 +87,14 @@
   background: var(--accent);
   color: #1a130f;
   box-shadow: 0 14px 30px rgba(243, 186, 98, 0.35);
+  border-radius: 6px;
 }
 
 .btn.ghost {
   background: transparent;
   border-color: rgba(15, 18, 33, 0.2);
   color: var(--ink);
+  border-radius: 9px;
 }
 
 .hero {
