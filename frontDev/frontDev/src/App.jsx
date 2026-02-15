@@ -26,7 +26,7 @@ function App() {
         <section className="hero">
           <div className="hero-text">
             <p className="eyebrow">A translator that feels like a real person</p>
-            <h1>Translate with tone, not just words.</h1>
+            <h1>Translate with tone, not just words</h1>
             <p className="lead">
               TongueBridge helps you express exactly what you mean — clear, warm, and local.
               Perfect for everyday chats, work conversations, and travel moments
@@ -77,15 +77,15 @@ function App() {
         <section className="feature-grid" id="features">
           <article>
             <h3>Real tone control</h3>
-            <p>Choose casual, polite, or professional. The meaning stays true.</p>
+            <p>Your words, Your tone, with no change in meaning</p>
           </article>
           <article>
             <h3>Natural phrasing</h3>
-            <p>No robotic sentences. It reads like a local wrote it.</p>
+            <p>No robotic sentences, It reads like a local wrote it</p>
           </article>
           <article>
             <h3>Fast & steady</h3>
-            <p>Results show in seconds, even on slow connections.</p>
+            <p>Results show in seconds, even on slow connections</p>
           </article>
         </section>
 
@@ -94,14 +94,14 @@ function App() {
             <h2>Premium plans that scale with you</h2>
             <p>
               Start free, then upgrade when you want tone controls, saved phrases,
-              and richer language nuance.
+              and richer language nuance
             </p>
           </div>
           <div className="pricing-cards">
             <article className="pricing-card">
               <h3>Free</h3>
               <p className="price">$0</p>
-              <p className="plan-note">Everyday translations and basic tone.</p>
+              <p className="plan-note">Everyday translations and basic tone</p>
               <button className="btn ghost">Keep free</button>
             </article>
             <article className="pricing-card highlight">
@@ -111,7 +111,7 @@ function App() {
                 $12<span>/mo</span>
               </p>
               <p className="plan-note">
-                Pro tone controls, phrase library, and private history.
+                Pro tone controls, phrase library, and private history
               </p>
               <button className="btn primary">Go Premium</button>
             </article>
@@ -120,7 +120,7 @@ function App() {
               <p className="price">
                 $24<span>/mo</span>
               </p>
-              <p className="plan-note">Shared glossaries and admin controls.</p>
+              <p className="plan-note">Shared glossaries and admin controls</p>
               <button className="btn ghost">Contact sales</button>
             </article>
           </div>
@@ -131,21 +131,21 @@ function App() {
             <h2>Built for people, not prompts</h2>
             <p>
               We keep the interface simple so your focus stays on the message.
-              Save favorite phrases, pin languages, and move on with your day.
+              Save favorite phrases, pin languages, and move on with your day
             </p>
           </div>
           <div className="note">
             <h4>Quick note</h4>
             <p>
               Your text is processed securely and never sold. We do not keep
-              translations longer than you need.
+              translations longer than you need
             </p>
           </div>
         </section>
       </main>
 
       <footer className="site-footer">
-        <p>Made with care for clear conversations.</p>
+        <p>Made with care for clear conversations</p>
         <div className="footer-links">
           <a href="#">Privacy</a>
           <a href="#">Terms</a>
