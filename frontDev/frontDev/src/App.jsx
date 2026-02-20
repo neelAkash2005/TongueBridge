@@ -1,8 +1,17 @@
 import './App.css';
 import logo from './assets/logo.png';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 function App() {
+  const [fromLang, setFromLang] = useState('English');
+  const [toLang, setToLang] = useState('Spanish');
+
+  const swapLanguages = () => {
+    const temp = fromLang;
+    setFromLang(toLang);
+    setToLang(temp);
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const header = document.querySelector('.site-header');
@@ -140,22 +149,30 @@ function App() {
               <span>Quick translate</span>
               <span className="status">Live</span>
             </div>
-            <label className="field">
-              <span>From</span>
-              <select>
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Spanish</option>
-              </select>
-            </label>
-            <label className="field">
-              <span>To</span>
-              <select>
-                <option>Spanish</option>
-                <option>English</option>
-                <option>French</option>
-              </select>
-            </label>
+            <div className="language-selector-container">
+              <label className="field">
+                <span>From</span>
+                <select value={fromLang} onChange={(e) => setFromLang(e.target.value)}>
+                  <option>English</option>
+                  <option>Hindi</option>
+                  <option>Spanish</option>
+                  <option>French</option>
+                </select>
+              </label>
+              <button className="swap-btn" onClick={swapLanguages} type="button" title="Swap languages">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M6.99 11L3 15L6.99 19V16H14V14H6.99V11ZM21 9L17.01 5V8H10V10H17.01V13L21 9Z" fill="currentColor"/>
+                </svg>
+              </button>
+              <div className="field-no-label">
+                <select value={toLang} onChange={(e) => setToLang(e.target.value)}>
+                  <option>Spanish</option>
+                  <option>English</option>
+                  <option>French</option>
+                  <option>Hindi</option>
+                </select>
+              </div>
+            </div>
             <textarea
               rows="5"
               placeholder="Type something natural..."

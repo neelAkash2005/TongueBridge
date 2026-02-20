@@ -444,6 +444,93 @@ textarea {
   padding: 0.6rem 0.75rem;
   font-family: 'Space Grotesk', sans-serif;
   background: #fffaf6;
+  transition: all 0.3s ease;
+}
+
+.field select:hover,
+textarea:hover {
+  border-color: rgba(15, 18, 33, 0.2);
+}
+
+.field select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.1);
+}
+
+/* Language Selector Container */
+.language-selector-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.language-selector-container .field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.field-no-label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-no-label select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 18, 33, 0.12);
+  padding: 0.6rem 0.75rem;
+  font-family: 'Space Grotesk', sans-serif;
+  background: #fffaf6;
+  transition: all 0.3s ease;
+}
+
+.field-no-label select:hover {
+  border-color: rgba(15, 18, 33, 0.2);
+}
+
+.field-no-label select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.1);
+}
+
+/* Swap Button */
+.swap-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(243, 186, 98, 0.3);
+  background: linear-gradient(135deg, rgba(243, 186, 98, 0.1), rgba(232, 135, 107, 0.1));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  margin: 0 1rem;
+}
+
+.swap-btn:hover {
+  background: linear-gradient(135deg, rgba(243, 186, 98, 0.2), rgba(232, 135, 107, 0.2));
+  border-color: rgba(243, 186, 98, 0.6);
+  transform: rotate(180deg) scale(1.1);
+  box-shadow: 0 4px 12px rgba(243, 186, 98, 0.3);
+}
+
+.swap-btn:active {
+  transform: rotate(180deg) scale(0.95);
+}
+
+.swap-btn svg {
+  color: var(--accent);
+  transition: color 0.3s ease;
 }
 
 textarea {
@@ -636,6 +723,24 @@ main {
   
   main {
     padding: 1rem;
+  }
+  
+  .language-selector-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .swap-btn {
+    transform: rotate(90deg);
+    margin-top: 0;
+  }
+  
+  .swap-btn:hover {
+    transform: rotate(270deg) scale(1.1);
+  }
+  
+  .swap-btn:active {
+    transform: rotate(270deg) scale(0.95);
   }
 }
 
