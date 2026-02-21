@@ -5,7 +5,10 @@ import { useEffect, useState } from 'react';
 function App() {
   const [fromLang, setFromLang] = useState('English');
   const [toLang, setToLang] = useState('Spanish');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem('darkMode');
+    return savedMode === 'true';
+  });
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -20,8 +23,10 @@ function App() {
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark-mode');
+      localStorage.setItem('darkMode', 'true');
     } else {
       document.documentElement.classList.remove('dark-mode');
+      localStorage.setItem('darkMode', 'false');
     }
   }, [isDarkMode]);
 
