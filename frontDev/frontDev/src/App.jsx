@@ -119,8 +119,8 @@ function App() {
           </a>
         </nav>
           <div className="header-actions">
-            <button className="btn ghost">Sign in</button>
-            <button className="btn primary">Go Premium</button>
+            <button className="btn ghost">sign in</button>
+            <button className="btn primary">log in</button>
           </div>
         </div>
       </header>
