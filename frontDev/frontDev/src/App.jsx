@@ -30,12 +30,17 @@ function App() {
     <div className="app">
       <header className="site-header">
         <div className="header-container">
-          <div className="brand">
+          <button
+            className="brand brand-button"
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label="Go to top"
+          >
             <div className="brand-mark">
               <img src={logo} alt="TongueBridge logo" />
             </div>
             <span className="brand-name">TongueBridge</span>
-          </div>
+          </button>
           <nav className="nav">
           <a href="#features" className="features-link">
             <svg className="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
