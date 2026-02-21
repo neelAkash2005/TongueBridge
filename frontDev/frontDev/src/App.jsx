@@ -150,22 +150,29 @@ function App() {
               <span className="status">Live</span>
             </div>
             <div className="language-selector-container">
-              <label className="field">
-                <span>From</span>
-                <select value={fromLang} onChange={(e) => setFromLang(e.target.value)}>
+              <div className="field-no-label">
+                <select
+                  value={fromLang}
+                  onChange={(e) => setFromLang(e.target.value)}
+                  aria-label="Source language"
+                >
                   <option>English</option>
                   <option>Hindi</option>
                   <option>Spanish</option>
                   <option>French</option>
                 </select>
-              </label>
+              </div>
               <button className="swap-btn" onClick={swapLanguages} type="button" title="Swap languages">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6.99 11L3 15L6.99 19V16H14V14H6.99V11ZM21 9L17.01 5V8H10V10H17.01V13L21 9Z" fill="currentColor"/>
                 </svg>
               </button>
               <div className="field-no-label">
-                <select value={toLang} onChange={(e) => setToLang(e.target.value)}>
+                <select
+                  value={toLang}
+                  onChange={(e) => setToLang(e.target.value)}
+                  aria-label="Target language"
+                >
                   <option>Spanish</option>
                   <option>English</option>
                   <option>French</option>
