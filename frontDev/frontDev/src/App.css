@@ -85,6 +85,7 @@
 .brand-name {
   font-family: 'Fraunces', serif;
   font-size: 1.1rem;
+  color: var(--ink);
 }
 
 .nav {
@@ -331,6 +332,37 @@
   align-items: center;
   gap: 0.75rem;
   flex-shrink: 0;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 18, 33, 0.12);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--ink);
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(15, 18, 33, 0.06);
+  border-color: rgba(15, 18, 33, 0.2);
+}
+
+.theme-toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.theme-toggle-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.theme-toggle-btn:hover svg {
+  transform: rotate(20deg);
 }
 
 .btn {
@@ -814,4 +846,193 @@ main {
   .contact-item {
     padding: 0.6rem 0.75rem;
   }
+}
+
+/* Dark Mode Styles */
+:root.dark-mode .site-header {
+  background: linear-gradient(180deg, rgba(26, 26, 26, 0.98) 0%, rgba(26, 26, 26, 0.95) 100%);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .site-header.scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+
+:root.dark-mode .brand-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+:root.dark-mode .features-link {
+  background: linear-gradient(135deg, rgba(147, 197, 253, 0.15), rgba(96, 165, 250, 0.15));
+  border-color: rgba(147, 197, 253, 0.4);
+}
+
+:root.dark-mode .features-link:hover {
+  background: linear-gradient(135deg, rgba(147, 197, 253, 0.25), rgba(96, 165, 250, 0.25));
+  border-color: rgba(147, 197, 253, 0.7);
+}
+
+:root.dark-mode .about-link {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(139, 92, 246, 0.15));
+  border-color: rgba(167, 139, 250, 0.4);
+}
+
+:root.dark-mode .about-link:hover {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.25), rgba(139, 92, 246, 0.25));
+  border-color: rgba(167, 139, 250, 0.7);
+}
+
+:root.dark-mode .contact-link {
+  background: linear-gradient(135deg, rgba(243, 186, 98, 0.15), rgba(232, 135, 107, 0.15));
+  border-color: rgba(243, 186, 98, 0.4);
+}
+
+:root.dark-mode .contact-link:hover {
+  background: linear-gradient(135deg, rgba(243, 186, 98, 0.25), rgba(232, 135, 107, 0.25));
+  border-color: rgba(243, 186, 98, 0.7);
+}
+
+:root.dark-mode .nav-dropdown,
+:root.dark-mode .contact-dropdown {
+  background: #1f1f1f;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .nav-dropdown::before,
+:root.dark-mode .contact-dropdown::before {
+  background: #1f1f1f;
+  border-top-color: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .nav-item:hover,
+:root.dark-mode .contact-item:hover {
+  background: rgba(243, 186, 98, 0.15);
+}
+
+:root.dark-mode .features-link .nav-item:hover {
+  background: rgba(147, 197, 253, 0.2);
+}
+
+:root.dark-mode .about-link .nav-item:hover {
+  background: rgba(167, 139, 250, 0.2);
+}
+
+:root.dark-mode .theme-toggle-btn {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+:root.dark-mode .theme-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+:root.dark-mode .btn.ghost {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:root.dark-mode .btn.ghost:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+:root.dark-mode .hero-card {
+  background: rgba(30, 30, 30, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+:root.dark-mode .status {
+  background: rgba(243, 186, 98, 0.2);
+  color: #f3ba62;
+}
+
+:root.dark-mode .field select,
+:root.dark-mode textarea,
+:root.dark-mode .field-no-label select {
+  background: rgba(20, 20, 20, 0.6);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--ink);
+}
+
+:root.dark-mode .field select:hover,
+:root.dark-mode textarea:hover,
+:root.dark-mode .field-no-label select:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+:root.dark-mode .field select:focus,
+:root.dark-mode textarea:focus,
+:root.dark-mode .field-no-label select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.2);
+}
+
+:root.dark-mode .swap-btn {
+  border-color: rgba(243, 186, 98, 0.4);
+  background: linear-gradient(135deg, rgba(243, 186, 98, 0.15), rgba(232, 135, 107, 0.15));
+}
+
+:root.dark-mode .swap-btn:hover {
+  background: linear-gradient(135deg, rgba(243, 186, 98, 0.25), rgba(232, 135, 107, 0.25));
+}
+
+:root.dark-mode .feature-grid article {
+  background: rgba(30, 30, 30, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .pricing-card {
+  background: rgba(30, 30, 30, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .pricing-card.highlight {
+  background: rgba(243, 186, 98, 0.15);
+  border-color: rgba(243, 186, 98, 0.5);
+  box-shadow: 0 18px 35px rgba(243, 186, 98, 0.2);
+}
+
+:root.dark-mode .chip {
+  background: #f3ba62;
+  color: #1a130f;
+}
+
+:root.dark-mode .note {
+  background: rgba(243, 186, 98, 0.1);
+  border-color: rgba(243, 186, 98, 0.3);
+}
+
+:root.dark-mode .site-footer {
+  border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+:root.dark-mode .badges span {
+  opacity: 0.8;
+}
+
+:root.dark-mode textarea::placeholder {
+  color: rgba(232, 230, 227, 0.5);
+}
+
+:root.dark-mode .brand-mark {
+  box-shadow: 0 0 12px rgba(243, 186, 98, 0.4);
+}
+
+:root.dark-mode .brand-mark:hover {
+  box-shadow: 0 0 22px rgba(243, 186, 98, 0.7);
+}
+
+:root.dark-mode .eyebrow {
+  opacity: 0.7;
+}
+
+:root.dark-mode .lead {
+  opacity: 0.9;
+}
+
+:root.dark-mode .plan-note {
+  opacity: 0.85;
 }
