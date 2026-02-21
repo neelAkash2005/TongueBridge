@@ -33,8 +33,8 @@ function App() {
           <button
             className="brand brand-button"
             type="button"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            aria-label="Go to top"
+            onClick={() => window.location.reload()}
+            aria-label="Refresh page"
           >
             <div className="brand-mark">
               <img src={logo} alt="TongueBridge logo" />
