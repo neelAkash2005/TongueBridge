@@ -135,7 +135,7 @@ function App() {
               Perfect for everyday chats, work conversations, and travel moments
             </p>
             <div className="hero-actions">
-              <button className="btn primary">Get Started</button>
+              <button className="btn primary">Go Premium</button>
               <button className="btn ghost">Learn More</button>
             </div>
             <div className="badges">
