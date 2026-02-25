@@ -142,22 +142,8 @@ function App() {
           </a>
         </nav>
           <div className="header-actions">
-            <button
-              className="theme-toggle-btn"
-              onClick={toggleDarkMode}
-              type="button"
-              aria-label="Toggle dark mode"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {isDarkMode ? (
-                  <path d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.69L5.5 18.5M17.6859 17.69L18.5 18.5M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                ) : (
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
-                )}
-              </svg>
-            </button>
-            <button className="btn ghost">Sign in</button>
-            <button className="btn primary">Go Premium</button>
+            <button className="btn ghost">Log In</button>
+            <button className="btn primary">Sign Up</button>
           </div>
         </div>
       </header>
@@ -172,7 +158,7 @@ function App() {
               Perfect for everyday chats, work conversations, and travel moments
             </p>
             <div className="hero-actions">
-              <button className="btn primary">Get Started</button>
+              <button className="btn primary">Go Premium</button>
               <button className="btn ghost">Learn More</button>
             </div>
             <div className="badges">
