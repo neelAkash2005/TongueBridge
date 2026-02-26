@@ -8,7 +8,7 @@ function App() {
 
   const goToPricing = () => {
     document.getElementById( 'pricing')?.scrollIntoView({
-      behaviour: 'smooth'
+      behavior: 'smooth'
     });
   };
 
