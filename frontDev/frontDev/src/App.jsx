@@ -6,6 +6,12 @@ function App() {
   const [fromLang, setFromLang] = useState('English');
   const [toLang, setToLang] = useState('Spanish');
 
+  const goToPricing = () => {
+    document.getElementById( 'pricing')?.scrollIntoView({
+      behaviour: 'smooth'
+    });
+  };
+
   const swapLanguages = () => {
     const temp = fromLang;
     setFromLang(toLang);
@@ -135,7 +141,9 @@ function App() {
               Perfect for everyday chats, work conversations, and travel moments
             </p>
             <div className="hero-actions">
-              <button className="btn primary">Go Premium</button>
+              <button className="btn primary" onClick={goToPricing}>
+                Go Premium
+              </button>
               <button className="btn ghost">Learn More</button>
             </div>
             <div className="badges">
