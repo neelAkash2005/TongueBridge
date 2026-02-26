@@ -16,6 +16,10 @@ function App() {
     });
   };
 
+  const [inputText, setInputText] = useState(''); 
+  const [outputText, setOutputText] = useState('');
+  const [showOutput, setShowOutput] = useState(false);
+
   const swapLanguages = () => {
     const temp = fromLang;
     setFromLang(toLang);
@@ -24,6 +28,22 @@ function App() {
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
+  };
+
+  // --- CHANGED: Removed the label from the output ---
+  const handleTranslate = () => {
+    if (inputText.trim() === '') return;
+    
+    // For now, this just mirrors your input text as a placeholder
+    // until you connect a real translation API
+    setOutputText(inputText); 
+    setShowOutput(true); 
+  };
+
+  const handleClear = () => {
+    setInputText('');
+    setOutputText('');
+    setShowOutput(false); 
   };
 
   useEffect(() => {
@@ -219,14 +239,27 @@ function App() {
                 </select>
               </div>
             </div>
+            
             <textarea
               rows="5"
-              placeholder="Type something natural..."
-              defaultValue="Could you share the address?"
+              placeholder="Could you share the address?"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
             />
+
+            {showOutput && (
+              <textarea
+                rows="5"
+                value={outputText}
+                readOnly
+                className="output-box"
+                style={{ marginTop: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+              />
+            )}
+
             <div className="card-actions">
-              <button className="btn primary">Translate</button>
-              <button className="btn ghost">Clear</button>
+              <button className="btn primary" onClick={handleTranslate}>Translate</button>
+              <button className="btn ghost" onClick={handleClear}>Clear</button>
             </div>
           </div>
         </section>
