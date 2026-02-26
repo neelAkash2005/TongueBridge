@@ -156,8 +156,8 @@ function App() {
                 )}
               </svg>
             </button>
-            <button className="btn ghost">Sign in</button>
-            <button className="btn primary">Go Premium</button>
+            <button className="btn ghost">Log In</button>
+            <button className="btn primary">Sign Up</button>
           </div>
         </div>
       </header>
