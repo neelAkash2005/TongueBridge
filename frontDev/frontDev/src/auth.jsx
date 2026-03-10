@@ -290,6 +290,8 @@ export default function AuthPanel({ initialMode, onClose, onLoginSuccess }) {
                 Already have an account
               </button>
             </div>
+
+            <p className="auth-note">We never share your information</p>
           </form>
         ) : (
           <form className="auth-form" onSubmit={handleLoginSubmit}>
@@ -311,6 +313,8 @@ export default function AuthPanel({ initialMode, onClose, onLoginSuccess }) {
                 Create account
               </button>
             </div>
+
+            <p className="auth-note">By continuing you agree to our Terms and Privacy</p>
           </form>
         )}
       </div>

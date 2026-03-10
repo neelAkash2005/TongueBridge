@@ -460,6 +460,12 @@
   flex-wrap: wrap;
 }
 
+.auth-note {
+  margin: 0.25rem 0 0;
+  font-size: 0.84rem;
+  opacity: 0.72;
+}
+
 .theme-toggle-btn {
   display: flex;
   align-items: center;
