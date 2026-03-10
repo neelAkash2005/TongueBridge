@@ -1,6 +1,7 @@
 import './App.css';
 import logo from './assets/logo.png';
 import { useEffect, useState } from 'react';
+import AuthPanel from './auth.jsx';
 
 function App() {
   const [fromLang, setFromLang] = useState('English');
@@ -19,6 +20,9 @@ function App() {
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
   const [showOutput, setShowOutput] = useState(false);
+  const [loggedInUsername, setLoggedInUsername] = useState('');
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('login');
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -44,6 +48,20 @@ function App() {
     setInputText('');
     setOutputText('');
     setShowOutput(false); 
+  };
+
+  const openSignUp = () => {
+    setAuthMode('signup');
+    setIsAuthOpen(true);
+  };
+
+  const openLogin = () => {
+    setAuthMode('login');
+    setIsAuthOpen(true);
+  };
+
+  const handleSignOut = () => {
+    setLoggedInUsername('');
   };
 
   useEffect(() => {
@@ -176,11 +194,35 @@ function App() {
                 )}
               </svg>
             </button>
-            <button className="btn ghost">Log In</button>
-            <button className="btn primary">Sign Up</button>
+
+            {loggedInUsername ? (
+              <>
+                <span className="auth-user">{loggedInUsername}</span>
+                <button className="btn ghost" onClick={handleSignOut} type="button">
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="btn ghost" onClick={openLogin} type="button">
+                  Log In
+                </button>
+                <button className="btn primary" onClick={openSignUp} type="button">
+                  Sign Up
+                </button>
+              </>
+            )}
           </div>
         </div>
       </header>
+
+      {isAuthOpen ? (
+        <AuthPanel
+          initialMode={authMode}
+          onClose={() => setIsAuthOpen(false)}
+          onLoginSuccess={setLoggedInUsername}
+        />
+      ) : null}
 
       <main>
         <section className="hero">
