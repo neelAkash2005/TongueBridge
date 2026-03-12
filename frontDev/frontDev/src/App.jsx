@@ -64,6 +64,17 @@ function App() {
     setLoggedInUsername('');
   };
 
+  const [contactSubject, setContactSubject] = useState('');
+  const [contactMessage, setContactMessage] = useState('');
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    if (!contactMessage.trim()) return;
+    const subject = encodeURIComponent(contactSubject.trim() || 'Problem Report – TongueBridge');
+    const body = encodeURIComponent(contactMessage.trim());
+    window.location.href = `mailto:support@tonguebridge.com?subject=${subject}&body=${body}`;
+  };
+
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add('dark-mode');
@@ -377,13 +388,91 @@ function App() {
       </main>
 
       <footer className="site-footer">
-        <p>Made with care for clear conversations</p>
-        <div className="footer-links">
-          <a href="#">Privacy</a>
-          <a href="#">Terms</a>
-          <a href="#">Contact</a>
-        </div>
-      </footer>
+
+  <div className="footer-contact-section">
+    <h3 className="footer-contact-title">Report a Problem</h3>
+    <p className="footer-contact-desc">
+      Something not working? Send us a message and we&apos;ll get back to you.
+    </p>
+    <form className="footer-contact-form" onSubmit={handleContactSubmit}>
+      <input
+        type="text"
+        className="footer-contact-input"
+        placeholder="Subject (optional)"
+        value={contactSubject}
+        onChange={(e) => setContactSubject(e.target.value)}
+      />
+      <textarea
+        className="footer-contact-textarea"
+        rows="4"
+        placeholder="Describe your problem..."
+        value={contactMessage}
+        onChange={(e) => setContactMessage(e.target.value)}
+        required
+      />
+      <button type="submit" className="btn primary footer-contact-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{marginRight: '8px'}}>
+          <path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z" fill="currentColor"/>
+        </svg>
+        Send via Email
+      </button>
+    </form>
+  </div>
+
+  <div className="footer-contact-divider" />
+
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      width: "100%",
+      paddingTop: "3.7rem",
+      marginTop: "2.5rem",
+      borderTop: "2px solid rgba(15, 18, 33, 0.1)"
+    }}
+  >
+
+    {/* Left */}
+    <div>
+      Made with care for clear conversations
+    </div>
+
+    {/* Center */}
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "20px"
+      }}
+    >
+      <span>Follow us on</span>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "22px",
+          fontSize: "21px"
+        }}
+      >
+        <i className="fab fa-facebook-f"></i>
+        <i className="fab fa-twitter"></i>
+        <i className="fab fa-instagram"></i>
+        <i className="fab fa-linkedin-in"></i>
+      </div>
+    </div>
+
+    {/* Right */}
+    <div style={{ display: "flex", gap: "50px" }}>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Contact</a>
+    </div>
+
+  </div>
+
+</footer>
     </div>
   );
 }
