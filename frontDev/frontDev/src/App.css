@@ -454,6 +454,45 @@
   box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.12);
 }
 
+.auth-password-input.auth-password-weak {
+  border-color: rgba(232, 135, 107, 0.85);
+  box-shadow: 0 0 0 3px rgba(232, 135, 107, 0.12);
+}
+
+.auth-password-input.auth-password-moderate {
+  border-color: rgba(243, 186, 98, 0.85);
+  box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.12);
+}
+
+.auth-password-input.auth-password-strong {
+  border-color: rgba(96, 165, 250, 0.85);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.12);
+}
+
+.auth-password-feedback {
+  margin: 0.25rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.auth-password-feedback-weak {
+  color: #da6f50;
+}
+
+.auth-password-feedback-moderate {
+  color: #cb8f26;
+}
+
+.auth-password-feedback-strong {
+  color: #3b82f6;
+}
+
+.auth-password-suggestion {
+  margin: 0.1rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.82;
+}
+
 .auth-actions {
   display: flex;
   gap: 0.75rem;
@@ -1119,6 +1158,37 @@ main {
 :root.dark-mode .auth-field select:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.16);
+}
+
+:root.dark-mode .auth-password-input.auth-password-weak {
+  border-color: rgba(232, 135, 107, 0.9);
+  box-shadow: 0 0 0 3px rgba(232, 135, 107, 0.2);
+}
+
+:root.dark-mode .auth-password-input.auth-password-moderate {
+  border-color: rgba(243, 186, 98, 0.9);
+  box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.2);
+}
+
+:root.dark-mode .auth-password-input.auth-password-strong {
+  border-color: rgba(96, 165, 250, 0.9);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+}
+
+:root.dark-mode .auth-password-feedback-weak {
+  color: #f0a089;
+}
+
+:root.dark-mode .auth-password-feedback-moderate {
+  color: #f7c980;
+}
+
+:root.dark-mode .auth-password-feedback-strong {
+  color: #93c5fd;
+}
+
+:root.dark-mode .auth-password-suggestion {
+  color: rgba(255, 255, 255, 0.78);
 }
 
 :root.dark-mode .btn.ghost {

@@ -45,6 +45,60 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+const STRONG_PASSWORD_SUGGESTIONS = [
+  'Sky!River9Moon#',
+  'Tiger@Forest42!',
+  'Neon$Bridge7Wave',
+  'Mango#Cloud81*',
+  'Nova!Stone6Leaf$',
+];
+
+function getStrongPasswordSuggestion(password) {
+  const hash = [...password].reduce((total, char) => total + char.charCodeAt(0), 0);
+  const index = hash % STRONG_PASSWORD_SUGGESTIONS.length;
+  return STRONG_PASSWORD_SUGGESTIONS[index];
+}
+
+function evaluatePasswordStrength(password) {
+  if (!password) {
+    return {
+      level: '',
+      message: '',
+      suggestion: '',
+    };
+  }
+
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+  if (/[a-z]/.test(password)) score += 1;
+  if (/[A-Z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+  if (score <= 3) {
+    return {
+      level: 'weak',
+      message: 'Password is too weak. Make it strong.',
+      suggestion: `Try: ${getStrongPasswordSuggestion(password)}`,
+    };
+  }
+
+  if (score <= 5) {
+    return {
+      level: 'moderate',
+      message: 'Password is moderate. Make it strong with more variety.',
+      suggestion: `Try: ${getStrongPasswordSuggestion(password)}`,
+    };
+  }
+
+  return {
+    level: 'strong',
+    message: 'Strong password.',
+    suggestion: '',
+  };
+}
+
 export function signUpUser(formData) {
   const firstName = formData.firstName.trim();
   const lastName = formData.lastName.trim();
@@ -135,6 +189,7 @@ export default function AuthPanel({ initialMode, onClose, onLoginSuccess }) {
   const [message, setMessage] = useState('');
   const [signUpForm, setSignUpForm] = useState(emptySignUpForm);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const passwordStrength = evaluatePasswordStrength(signUpForm.password);
 
   useEffect(() => {
     setMode(initialMode);
@@ -278,7 +333,21 @@ export default function AuthPanel({ initialMode, onClose, onLoginSuccess }) {
 
               <label className="auth-field auth-field-full">
                 <span>Password</span>
-                <input name="password" value={signUpForm.password} onChange={handleSignUpChange} type="password" />
+                <input
+                  className={`auth-password-input ${passwordStrength.level ? `auth-password-${passwordStrength.level}` : ''}`}
+                  name="password"
+                  value={signUpForm.password}
+                  onChange={handleSignUpChange}
+                  type="password"
+                />
+                {passwordStrength.message ? (
+                  <p className={`auth-password-feedback auth-password-feedback-${passwordStrength.level}`}>
+                    {passwordStrength.message}
+                  </p>
+                ) : null}
+                {passwordStrength.suggestion ? (
+                  <p className="auth-password-suggestion">Suggested strong password: {passwordStrength.suggestion}</p>
+                ) : null}
               </label>
             </div>
 
