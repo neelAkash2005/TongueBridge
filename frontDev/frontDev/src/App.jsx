@@ -344,7 +344,10 @@ function App() {
             <article className="pricing-card">
               <h3>Free</h3>
               <p className="price">$0</p>
-              <p className="plan-note">Everyday translations and basic tone</p>
+              <p className="plan-note"> <ul>
+                <li>6 Translation daily </li>
+              <li>Audio Translation (6 translation)</li>
+              <li>Language Detection (only)</li></ul></p>
               <button className="btn ghost">Keep free</button>
             </article>
             <article className="pricing-card highlight">
@@ -353,9 +356,12 @@ function App() {
               <p className="price">
                 $12<span>/mo</span>
               </p>
-              <p className="plan-note">
-                Pro tone controls, phrase library, and private history
-              </p>
+              <p className="plan-note"><ul>
+              <li>Everything is Free, plus: </li>
+              <li>Unlimited Translation</li>
+              <li>Language Detection with Translation</li>
+              <li>Image-Text Translation (19 img)</li>
+              <li>Document Translation</li></ul></p>
               <button className="btn primary">Go Premium</button>
             </article>
             <article className="pricing-card">
@@ -363,7 +369,11 @@ function App() {
               <p className="price">
                 $24<span>/mo</span>
               </p>
-              <p className="plan-note">Shared glossaries and admin controls</p>
+              <p className="plan-note"><ul>
+                <li>Everything is free, plus: </li>
+                <li>6 Device connection</li>
+                <li>Image-text Translation (unlimited)</li>
+                <li>Industrial Special Language pack</li></ul></p>
               <button className="btn ghost">Contact sales</button>
             </article>
           </div>
