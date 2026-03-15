@@ -343,7 +343,7 @@ function App() {
           <div className="pricing-cards">
             <article className="pricing-card">
               <h3>Free</h3>
-              <p className="price">$0</p>
+              <p className="price">₹0</p>
               <p className="plan-note"> <ul>
                 <li>6 Translation daily </li>
               <li>Audio Translation (6 translation)</li>
@@ -354,7 +354,7 @@ function App() {
               <span className="chip">Most popular</span>
               <h3>Premium</h3>
               <p className="price">
-                $12<span>/mo</span>
+                ₹349<span>/mo</span>
               </p>
               <p className="plan-note"><ul>
               <li>Everything is Free, plus: </li>
@@ -367,14 +367,14 @@ function App() {
             <article className="pricing-card">
               <h3>Team</h3>
               <p className="price">
-                $24<span>/mo</span>
+                ₹999<span>/mo</span>
               </p>
               <p className="plan-note"><ul>
                 <li>Everything is free, plus: </li>
                 <li>6 Device connection</li>
                 <li>Image-text Translation (unlimited)</li>
                 <li>Industrial Special Language pack</li></ul></p>
-              <button className="btn ghost">Contact sales</button>
+              <button className="btn ghost">Share Premium</button>
             </article>
           </div>
         </section>
