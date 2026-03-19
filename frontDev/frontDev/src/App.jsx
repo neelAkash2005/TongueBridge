@@ -55,7 +55,7 @@ function DevelopersSection() {
   return (
     <div className="developers-page" style={{ padding: '4rem 0', textAlign: 'center' }}>
       <p className="eyebrow">The minds behind TongueBridge</p>
-      <h1 style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'var(--accent-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+      <h1 style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'linear-gradient(90deg, #f5f5f5)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: '0 0 20px rgba(255, 138, 61, 0.4)' }}>
         Meet the Developers
       </h1>
       <p className="lead" style={{ maxWidth: '600px', margin: '0 auto 4rem' }}>
@@ -68,11 +68,11 @@ function DevelopersSection() {
           <article key={index} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', minWidth: '280px', padding: '2rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--surface-border)' }}>
             
             {/* Developer Image */}
-            <div style={{ padding: '4px', background: 'var(--accent-gradient)', borderRadius: '50%' }}>
+            <div style={{ padding: '4px', background: 'var(--accent-gradient)', borderRadius: '60%', overflow: 'hidden' }}>
               <img 
                 src={member.image} 
                 alt={member.name} 
-                style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', display: 'block', border: '4px solid var(--bg-secondary)' }}
+                style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'center', transform: 'scale(1.3)', display: 'block', border: '4px solid var(--bg-secondary)' }}
               />
             </div>
 
@@ -101,7 +101,7 @@ function DevelopersSection() {
 
       <div className="note" style={{ marginTop: '4rem', display: 'inline-block', textAlign: 'left' }}>
         <h4>Want to collaborate?</h4>
-        <p>We are always open to feedback and collaboration. Check out our GitHub repositories above!</p>
+        <p>We are always open to feedback and collaboration. Check out our GitHub repositories above !</p>
       </div>
     </div>
   );
