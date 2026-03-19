@@ -12,43 +12,38 @@ import { useEffect, useState } from 'react';
 // --- NEW: Team Data Array for 6 Developers ---
 const teamMembers = [
   {
-    name: "Akash Podder",
-    role: "Full Stack Developer",
+    name: "Akash Poddar",
+    role: "Project Lead",
     image: Dev1, 
     github: "https://github.com/neelAkash2005",
     linkedin: "https://www.linkedin.com/in/akashpoddar10"
   },
   {
-    name: "Developer Two",
-    role: "Frontend Engineer",
+    name: "Ankur Maji",
     image: Dev2,
     github: "https://github.com/ankurmaji0010",
     linkedin: "https://www.linkedin.com/in/ankur-maji-939934281?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Developer Three",
-    role: "Backend Engineer",
+    name: "Anurupa Maitra",
     image: Dev3, 
     github: "https://github.com/anurupamaitra",
     linkedin: "https://www.linkedin.com/in/anurupa-maitra-3a29a8282?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Developer Four",
-    role: "UI/UX Designer",
+    name: "Ankita Chakraborty",
     image: Dev4, 
     github: "https://github.com/ach-05",
     linkedin: "https://www.linkedin.com/in/ankita-chakraborty-09b271291?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Developer Five",
-    role: "AI Integration",
+    name: "Akash Pal",
     image: Dev5, 
     github: "https://github.com/pallz-hub",
     linkedin: "https://www.linkedin.com/in/akash-pal-a2473936a?utm_source=share_via&utm_content=profile&utm_medium=member_android"
   },
   {
-    name: "Developer Six",
-    role: "Project Manager",
+    name: "Aniket Sharma",
     image: Dev6, 
     github: "https://github.com/Aniket12-coder",
     linkedin: "https://www.linkedin.com/in/aniket-sharma-b21324291/"
