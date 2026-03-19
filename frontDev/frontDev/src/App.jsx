@@ -124,6 +124,18 @@ function App() {
     });
   };
 
+  const goToContactSection = () => {
+    document.getElementById('contact-us')?.scrollIntoView({
+      behavior: 'smooth'
+    });
+  };
+
+  const goToTranslateSection = () => {
+    document.getElementById('translate-tone')?.scrollIntoView({
+      behavior: 'smooth'
+    });
+  };
+
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
   const [showOutput, setShowOutput] = useState(false);
@@ -220,7 +232,16 @@ function App() {
           </button>
           
           <nav className="nav">
-          <a href="#features" onClick={() => setActivePage('home')}>
+          <a
+            href="#pricing"
+            onClick={(e) => {
+              e.preventDefault();
+              setActivePage('features');
+              goToPricing();
+            }}
+            style={{ color: activePage === 'features' ? 'var(--accent)' : '' }}
+            className="features-link"
+          >
             <svg className="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" opacity="0.6"/>
               <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -248,7 +269,16 @@ function App() {
               </div>
             </div>
           </a>
-          <a href="#about" onClick={() => setActivePage('home')}>
+          <a
+            href="#translate-tone"
+            onClick={(e) => {
+              e.preventDefault();
+              setActivePage('about');
+              goToTranslateSection();
+            }}
+            style={{ color: activePage === 'about' ? 'var(--accent)' : '' }}
+            className="about-link"
+          >
             <svg className="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V11H13V17ZM13 9H11V7H13V9Z" fill="currentColor"/>
             </svg>
@@ -282,12 +312,25 @@ function App() {
                 setActivePage('developers'); 
               }}
               style={{ color: activePage === 'developers' ? 'var(--accent)' : '' }}
+              className="developers-link"
             >
-               Developers
+              <svg className="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z" fill="currentColor"/>
+              </svg>
+              Developers
             </a>
 
-          <a href="#contact-us" onClick={() => setActivePage('home')}>
-            <svg className="contact-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <a
+            href="#contact-us"
+            onClick={(e) => {
+              e.preventDefault();
+              setActivePage('contact');
+              goToContactSection();
+            }}
+            style={{ color: activePage === 'contact' ? 'var(--accent)' : '' }}
+            className="contact-link"
+          >
+            <svg className="nav-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M20 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z" fill="currentColor"/>
             </svg>
             Contact Us
@@ -309,21 +352,6 @@ function App() {
         </nav>
 
           <div className="header-actions">
-            <button
-              className="theme-toggle-btn"
-              onClick={toggleDarkMode}
-              type="button"
-              aria-label="Toggle dark mode"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {isDarkMode ? (
-                  <path d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.69L5.5 18.5M17.6859 17.69L18.5 18.5M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                ) : (
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
-                )}
-              </svg>
-            </button>
-
             {loggedInUsername ? (
               <>
                 <span className="auth-user">{loggedInUsername}</span>
@@ -354,9 +382,11 @@ function App() {
       ) : null}
 
       <main>
-        {activePage === 'home' ? (
+        {activePage === 'developers' ? (
+          <DevelopersSection />
+        ) : (
           <>
-            <section className="hero">
+            <section className="hero" id="translate-tone">
               <div className="hero-text">
                 <p className="eyebrow">A translator that feels like a real person</p>
                 <h1>Translate with tone, not just words</h1>
@@ -365,7 +395,7 @@ function App() {
                   Perfect for everyday chats, work conversations, and travel moments
                 </p>
                 <div className="hero-actions">
-                  <button className="btn primary">Get Started</button>
+                  <button className="btn primary" onClick={goToPricing}>Go Premium</button>
                   <button className="btn ghost">Learn More</button>
                 </div>
                 <div className="badges">
@@ -374,7 +404,25 @@ function App() {
                   <span>Privacy first</span>
                 </div>
               </div>
-              <div className="hero-card" id="demo">
+              <div className="hero-card-stack">
+                <div className="hero-mode-toggle">
+                  <button
+                    className="theme-toggle-btn"
+                    onClick={toggleDarkMode}
+                    type="button"
+                    aria-label="Toggle dark mode"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      {isDarkMode ? (
+                        <path d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.69L5.5 18.5M17.6859 17.69L18.5 18.5M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      ) : (
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor"/>
+                      )}
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="hero-card" id="demo">
                 <div className="card-header">
                   <span>Quick translate</span>
                   <span className="status">Live</span>
@@ -432,6 +480,7 @@ function App() {
                   <button className="btn primary" onClick={handleTranslate}>Translate</button>
                   <button className="btn ghost" onClick={handleClear}>Clear</button>
                 </div>
+              </div>
               </div>
             </section>
 
@@ -504,14 +553,12 @@ function App() {
               </div>
             </section>
           </>
-        ) : (
-          <DevelopersSection />
         )}
       </main>
 
       <footer className="site-footer">
 
-  <div className="footer-contact-section">
+  <div className="footer-contact-section" id="contact-us">
     <h3 className="footer-contact-title">Report a Problem</h3>
     <p className="footer-contact-desc">
       Something not working? Send us a message and we&apos;ll get back to you.
