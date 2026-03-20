@@ -143,6 +143,7 @@ function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
+  const [activeLegalModal, setActiveLegalModal] = useState(null);
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -182,6 +183,18 @@ function App() {
 
 const closeLearnMore = () => {
   setIsLearnMoreOpen(false);
+  };
+
+  const openPrivacyPolicy = () => {
+    setActiveLegalModal('privacy');
+  };
+
+  const openTerms = () => {
+    setActiveLegalModal('terms');
+  };
+
+  const closeLegalModal = () => {
+    setActiveLegalModal(null);
   };
 
   const handleSignOut = () => {
@@ -521,6 +534,72 @@ const closeLearnMore = () => {
   </div>
 ) : null}
 
+      {activeLegalModal ? (
+        <div className="legal-overlay" role="dialog" aria-modal="true" aria-label={activeLegalModal === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}>
+          <div className="legal-box">
+            <button className="legal-close-btn" onClick={closeLegalModal} type="button" aria-label="Close">
+              ✖
+            </button>
+
+            {activeLegalModal === 'privacy' ? (
+              <>
+                <h2 className="legal-title">Privacy Policy</h2>
+                <p className="legal-updated">Effective date: March 21, 2026</p>
+
+                <section className="legal-section">
+                  <h3>What we collect</h3>
+                  <p>We collect account details (such as email and username), app usage data, and the text you submit for translation while using the service.</p>
+                </section>
+
+                <section className="legal-section">
+                  <h3>How we use your data</h3>
+                  <ul>
+                    <li>Deliver and improve translation quality</li>
+                    <li>Secure accounts and prevent abuse</li>
+                    <li>Respond to support requests and product issues</li>
+                  </ul>
+                </section>
+
+                <section className="legal-section">
+                  <h3>Data retention</h3>
+                  <p>We retain personal data only as long as needed for product operations, legal obligations, and account support. You can request deletion by contacting support.</p>
+                </section>
+
+                <section className="legal-section">
+                  <h3>Your rights</h3>
+                  <p>You may request access, correction, or deletion of your personal data at any time. Email us at support@tonguebridge.com.</p>
+                </section>
+              </>
+            ) : (
+              <>
+                <h2 className="legal-title">Terms of Service</h2>
+                <p className="legal-updated">Effective date: March 21, 2026</p>
+
+                <section className="legal-section">
+                  <h3>Use of service</h3>
+                  <p>You agree to use TongueBridge only for lawful purposes and not to upload harmful, illegal, or abusive content.</p>
+                </section>
+
+                <section className="legal-section">
+                  <h3>Accounts and security</h3>
+                  <p>You are responsible for maintaining the confidentiality of your account credentials and for all activity under your account.</p>
+                </section>
+
+                <section className="legal-section">
+                  <h3>Plans and billing</h3>
+                  <p>Paid plans renew based on the selected billing cycle. You can cancel before renewal to avoid future charges.</p>
+                </section>
+
+                <section className="legal-section">
+                  <h3>Limitations</h3>
+                  <p>TongueBridge is provided on an as-available basis. We work to keep the service accurate and available, but we do not guarantee uninterrupted operation.</p>
+                </section>
+              </>
+            )}
+          </div>
+        </div>
+      ) : null}
+
       <main>
         {activePage === 'developers' ? (
           <DevelopersSection />
@@ -778,8 +857,8 @@ const closeLearnMore = () => {
 
     {/* Right */}
     <div style={{ display: "flex", gap: "50px" }}>
-      <a href="#">Privacy</a>
-      <a href="#">Terms</a>
+      <button className="footer-legal-link" type="button" onClick={openPrivacyPolicy}>Privacy</button>
+      <button className="footer-legal-link" type="button" onClick={openTerms}>Terms</button>
       <a href="mailto:support@tonguebridge.com">Contact</a>
     </div>
 
