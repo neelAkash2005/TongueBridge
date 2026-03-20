@@ -250,59 +250,125 @@ const closeLearnMore = () => {
       
       <button className="close-btn" onClick={closeLearnMore}>✖</button>
 
-      <h2>What is TongueBridge?</h2>
+      <h2>🌐 What is TongueBridge?</h2>
       <p>
-        TongueBridge is an online Tarnslator which helps you translate with real tone, context,
-        and natural phrasing instead of robotic word conversion.
-        
-      </p>
+      TongueBridge is an intelligent translation platform designed to go beyond basic word conversion. It helps users translate language with real tone, context awareness, and natural human-like phrasing, making communication more meaningful and accurate.
+      <br /> Unlike traditional translators, TongueBridge focuses on how something is said, not just what is said.  
+      </p> <br /><br />
 
-      <h2>Why use TongueBridge?</h2>
+      <h2>🤔 Why use TongueBridge?</h2>
       <p>
-        Most translation tools focus only on accuracy of words, but real communication is more than that. 
-        That is why this translator suggest or translate words according to the sentence.  
-      </p>
+      Most translation tools only focus on literal accuracy. But real communication depends on tone, intent, and context.
+
+      TongueBridge solves this by:
+      
+      <ul>
+        <li>Understanding the full meaning of sentences</li>
+        <li>Adapting translations based on formal, casual, or conversational tone</li>
+        <li>Delivering output that feels natural and human-written</li>
+      </ul>
+
+      This ensures your message is not just translated — but understood correctly.  
+      </p> <br /><br />
        
-      <h3>ToungeBridge focuses on:</h3>
+      <h3>🚀 ToungeBridge focuses on:</h3>
       <ul>
         <li> Real tone control</li>
-        <li> Natural sounding translations</li>
-        <li> Fast and simple interface</li>
-        <li> Privacy focused</li>
-      </ul>
+        <li> Natural sounding translations </li>
+        <li> Context-Aware Translation </li>
+        <li> Natural Human-like Output </li>
+        <li> Fast and simple interface </li>
+        <li> Privacy-Focused Processing </li>
+      </ul> <br /><br />
 
-      <h2>Features</h2>
-      <ul>
-        <li>ToungeBridge does not only translate, 
-          it keeps the  same tone such as formal and casual,
-           for every sentence.
-        </li>
-        <li>
-          Simple and easily understandable interface.
-        </li>
-        <li>Avoid awkward translation and understands 
-          meaning of sentence.
-        </li>
-        <li>
-          Translation sounds like written by a real person.
-        </li>
-        <li>
-          Fast result for quick commiunication. 
-        </li>
-        <li>
-          User Data and provided text datas are handle
-          with security.
-        </li>
+      <h2>⚙️ Features</h2>
+      TongueBridge offers more than just translation: <br /><br />
+
+      🔹 Smart Translation
+    <ul>
+      <li>  Maintains tone (formal/casual) </li>
+      <li>  Avoids robotic and awkward sentences </li>
+      <li> Understands sentence meaning, not just words </li> 
+    </ul>
+      
+      🔹 Voice & Audio
+    <ul> 
+      <li> Speech-to-text translation </li>
+      <li> Text-to-speech output </li>
+      <li> Accent detection </li>
+    </ul>
+
+      🔹 AI-Powered Enhancements
+    <ul>
+      <li>Language detection </li>
+      <li>Emotion-aware suggestions (future scope) </li>
+      <li>Natural phrasing improvements </li>
+    </ul>
+
+      🔹 Advanced Inputs
+    <ul>
+      <li> Image-to-text translation </li>
+      <li> Document translation (PDF, Word, Excel) </li>
+      <li> Real-time text processing </li>
+    </ul>
+
+      🔹 User Experience
+    <ul>
+      <li> Simple and clean UI </li>
+      <li> Fast responses for quick communication</li>
+      <li> Translation history tracking</li>
+    </ul>
+
+      🔹 Security
+    <ul>
+      <li>User data and text are handled securely </li>
+      <li>Privacy-first design approach </li>
+    </ul> <br /><br />
 
 
-      </ul>
+      <h2>💰 Plans & Pricing</h2>
 
-
-      <h2>Our vision</h2>
+      🟢 Free (₹0)
+    <ul>
+      <li> 1 Device </li>
+      <li> 5–6 searches daily </li>
+      <li> Basic audio translation </li>
+      <li> Language detection only </li>
+      <li> Limited image-to-text (up to 9 images) </li>
+    </ul>
+    
+      🔵 Premium (₹349)
+    <ul>
+      <li> Up to 3 devices </li>
+      <li>Unlimited searches</li>
+      <li>Unlimited audio translation (per device)</li>
+      <li>Language detection + translation</li>
+      <li>Image-to-text (up to 19 images)</li>
+      <li>Document translation (up to 100 files)</li>
+      <li>Industry-specific language packs</li>
+    </ul>
+    
+      🟣 Team (₹999)
+    <ul>
+      <li>Up to 6 devices </li>
+      <li>Unlimited usage </li>
+      <li>Full audio translation access</li>
+      <li>Advanced language detection + translation</li>
+      <li>Extended image & document limits</li>
+      <li>Shared team access</li>
+    </ul> <br /><br />
+      
+      
+      <h2>🌍 Our vision</h2>
       <p>
-        We believe language should never be a barrier.
+       TongueBridge aims to create a world where:
+      <ul>
+        <li> People can communicate freely across languages </li>
+        <li> Expressions retain their true meaning and emotion </li>
+        <li> Technology feels natural, not mechanical </li>
+      </ul>
 
-       TongueBridge aims to create a world where people can connect freely, express themselves clearly, and understand each other. No matter what language they speak.
+       Our goal is to make translation feel human, not artificial — enabling everyone to connect, understand, and express without limitations.
       </p>
 
     </div>
