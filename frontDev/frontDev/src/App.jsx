@@ -23,6 +23,7 @@ function App() {
   const [loggedInUsername, setLoggedInUsername] = useState('');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
+  const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -58,6 +59,14 @@ function App() {
   const openLogin = () => {
     setAuthMode('login');
     setIsAuthOpen(true);
+  };
+
+  const openLearnMore = () => {
+  setIsLearnMoreOpen(true);
+  };
+
+const closeLearnMore = () => {
+  setIsLearnMoreOpen(false);
   };
 
   const handleSignOut = () => {
@@ -235,6 +244,71 @@ function App() {
         />
       ) : null}
 
+      {isLearnMoreOpen ? (
+  <div className="learnmore-overlay">
+    <div className="learnmore-box">
+      
+      <button className="close-btn" onClick={closeLearnMore}>✖</button>
+
+      <h2>What is TongueBridge?</h2>
+      <p>
+        TongueBridge is an online Tarnslator which helps you translate with real tone, context,
+        and natural phrasing instead of robotic word conversion.
+        
+      </p>
+
+      <h2>Why use TongueBridge?</h2>
+      <p>
+        Most translation tools focus only on accuracy of words, but real communication is more than that. 
+        That is why this translator suggest or translate words according to the sentence.  
+      </p>
+       
+      <h3>ToungeBridge focuses on:</h3>
+      <ul>
+        <li> Real tone control</li>
+        <li> Natural sounding translations</li>
+        <li> Fast and simple interface</li>
+        <li> Privacy focused</li>
+      </ul>
+
+      <h2>Features</h2>
+      <ul>
+        <li>ToungeBridge does not only translate, 
+          it keeps the  same tone such as formal and casual,
+           for every sentence.
+        </li>
+        <li>
+          Simple and easily understandable interface.
+        </li>
+        <li>Avoid awkward translation and understands 
+          meaning of sentence.
+        </li>
+        <li>
+          Translation sounds like written by a real person.
+        </li>
+        <li>
+          Fast result for quick commiunication. 
+        </li>
+        <li>
+          User Data and provided text datas are handle
+          with security.
+        </li>
+
+
+      </ul>
+
+
+      <h2>Our vision</h2>
+      <p>
+        We believe language should never be a barrier.
+
+       TongueBridge aims to create a world where people can connect freely, express themselves clearly, and understand each other. No matter what language they speak.
+      </p>
+
+    </div>
+  </div>
+) : null}
+
       <main>
         <section className="hero">
           <div className="hero-text">
@@ -248,7 +322,9 @@ function App() {
               <button className="btn primary" onClick={goToPricing}>
                 Go Premium
               </button>
-              <button className="btn ghost">Learn More</button>
+              <button className="btn ghost" onClick={openLearnMore}>
+              Learn More
+              </button>
             </div>
             <div className="badges">
               <span>Multi languages</span>
@@ -316,6 +392,8 @@ function App() {
             </div>
           </div>
         </section>
+
+        
 
         <section className="feature-grid" id="features">
           <article>
