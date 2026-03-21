@@ -816,6 +816,8 @@ textarea {
 
 .pricing-card h3 {
   margin: 0;
+  font-size: 26px;
+  font-weight: 600;
 }
 
 .price {
@@ -833,6 +835,33 @@ textarea {
 .plan-note {
   margin: 0;
   opacity: 0.75;
+}
+
+.plan-lead {
+  margin: 0 0 0.6rem;
+  font-weight: 600;
+}
+
+.plan-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.plan-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  line-height: 1.4;
+}
+
+.plan-icon {
+  width: 1rem;
+  flex-shrink: 0;
+  text-align: center;
+  opacity: 0.95;
 }
 
 .pricing-card.highlight {

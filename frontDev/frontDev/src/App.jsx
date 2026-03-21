@@ -342,39 +342,64 @@ function App() {
           </div>
           <div className="pricing-cards">
             <article className="pricing-card">
+
               <h3>Free</h3>
-              <p className="price">₹0</p>
-              <p className="plan-note"> <ul>
-                <li>6 Translation daily </li>
-              <li>Audio Translation (6 translation)</li>
-              <li>Language Detection (only)</li></ul></p>
+              See what Smarter Translation can do. Upgrade anytime for more power and control
+
+              <p className="price">
+                &nbsp;&nbsp; ₹0<span>/mo</span>
+              </p>
+              <div className="plan-note">
+                <p className="plan-lead">✦ Perfect to get started:</p> <br />
+                <ul className="plan-list">
+                  <li><span className="plan-icon">◈</span> 5-6 translations per day</li>
+                  <li><span className="plan-icon">✎</span> Text translation (limited)</li>
+                  <li><span className="plan-icon">♫</span> Audio translation (limited)</li>
+                  <li><span className="plan-icon">◉</span> Image-to-text translation (limited - up to 9 images)</li>
+                </ul>
+              </div>
               <button className="btn ghost">Keep free</button>
             </article>
             <article className="pricing-card highlight">
               <span className="chip">Most popular</span>
+
               <h3>Premium</h3>
+              Experience Translation without limits, with advanced features
+
               <p className="price">
-                ₹349<span>/mo</span>
+                &nbsp;&nbsp; ₹249<span>/mo</span>
               </p>
-              <p className="plan-note"><ul>
-              <li>Everything is Free, plus: </li>
-              <li>Unlimited Translation</li>
-              <li>Language Detection with Translation</li>
-              <li>Image-Text Translation (19 img)</li>
-              <li>Document Translation</li></ul></p>
+              <div className="plan-note">
+                <p className="plan-lead">✦ Everything in Free, plus:</p><br />
+                <ul className="plan-list">
+                  <li><span className="plan-icon">∞</span> Unlimited text & audio translation</li>
+                  <li><span className="plan-icon">◎</span> Language detection with translation</li>
+                  <li><span className="plan-icon">◉</span> Image-to-Text translation (unlimited)</li>
+                  <li><span className="plan-icon">▣</span> Document translation</li>
+                  <li><span className="plan-icon">⌁</span> Website translation</li>
+                  <li><span className="plan-icon">♢</span> Tone-preserving translation</li>
+                </ul>
+              </div>
               <button className="btn primary">Go Premium</button>
             </article>
             <article className="pricing-card">
+
               <h3>Team</h3>
+              Built for Teams and Shared access
+
               <p className="price">
-                ₹999<span>/mo</span>
+                &nbsp;&nbsp; ₹999<span>/mo</span>
               </p>
-              <p className="plan-note"><ul>
-                <li>Everything is free, plus: </li>
-                <li>6 Device connection</li>
-                <li>Image-text Translation (unlimited)</li>
-                <li>Industrial Special Language pack</li></ul></p>
-              <button className="btn ghost">Share Premium</button>
+              <div className="plan-note">
+                <p className="plan-lead">✦ Everything in Premium, plus:</p> <br />
+                <ul className="plan-list">
+                  <li><span className="plan-icon">◍</span> Up to 6 users (shared access across devices)</li>
+                  <li><span className="plan-icon">⟡</span> Shared access to features & translations</li>
+                  <li><span className="plan-icon">⚡</span> Faster processing</li>
+                  <li><span className="plan-icon">☍</span> Team history & collaboration support</li>
+                </ul>
+              </div>
+              <button className="btn ghost">Go Team</button>
             </article>
           </div>
         </section>
