@@ -184,7 +184,7 @@ function emptySignUpForm() {
   };
 }
 
-export default function AuthPanel({ initialMode, onClose, onLoginSuccess }) {
+export default function AuthPanel({ initialMode, onClose, onLoginSuccess, onSignUpSuccess }) {
   const [mode, setMode] = useState(initialMode);
   const [message, setMessage] = useState('');
   const [signUpForm, setSignUpForm] = useState(emptySignUpForm);
@@ -247,6 +247,9 @@ export default function AuthPanel({ initialMode, onClose, onLoginSuccess }) {
 
     setLoginForm({ username: result.username, password: '' });
     setSignUpForm(emptySignUpForm());
+    if (onSignUpSuccess) {
+      onSignUpSuccess(result.username);
+    }
     openLoginMode('Sign up successful. Please log in.');
   };
 

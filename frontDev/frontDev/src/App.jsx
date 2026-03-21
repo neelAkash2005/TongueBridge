@@ -9,6 +9,8 @@ import Dev5 from './assets/Dev5.jpeg';
 import Dev6 from './assets/Dev6.jpg';
 import { useEffect, useState } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
+import PremiumPage from './PremiumPage.jsx';
+import TeamPage from './TeamPage.jsx';
 
 // --- NEW: Team Data Array for 6 Developers ---
 const teamMembers = [
@@ -146,6 +148,7 @@ function App() {
   const [authMode, setAuthMode] = useState('login');
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [activeLegalModal, setActiveLegalModal] = useState(null);
+  const [pendingPlanPage, setPendingPlanPage] = useState(null);
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -180,6 +183,31 @@ function App() {
     setIsAuthOpen(true);
   };
 
+  const handleProtectedPlanOpen = (targetPage) => {
+    if (loggedInUsername) {
+      setActivePage(targetPage);
+      return;
+    }
+
+    setPendingPlanPage(targetPage);
+    window.alert('Please log in or sign up first to continue.');
+    setAuthMode('login');
+    setIsAuthOpen(true);
+  };
+
+  const handleLoginSuccess = (username) => {
+    setLoggedInUsername(username);
+    window.alert(`Logged in successfully as ${username}.`);
+    if (pendingPlanPage) {
+      setActivePage(pendingPlanPage);
+      setPendingPlanPage(null);
+    }
+  };
+
+  const handleSignUpSuccess = (username) => {
+    window.alert(`Sign up successful for ${username}. Please log in.`);
+  };
+
   const openLearnMore = () => {
   setIsLearnMoreOpen(true);
   };
@@ -201,7 +229,10 @@ const closeLearnMore = () => {
   };
 
   const handleSignOut = () => {
+    window.alert('Signed out successfully.');
     setLoggedInUsername('');
+    setActivePage('home');
+    setPendingPlanPage(null);
   };
 
   const [contactSubject, setContactSubject] = useState('');
@@ -402,7 +433,8 @@ const closeLearnMore = () => {
         <AuthPanel
           initialMode={authMode}
           onClose={() => setIsAuthOpen(false)}
-          onLoginSuccess={setLoggedInUsername}
+          onLoginSuccess={handleLoginSuccess}
+          onSignUpSuccess={handleSignUpSuccess}
         />
       ) : null}
 
@@ -608,6 +640,10 @@ const closeLearnMore = () => {
       <main>
         {activePage === 'developers' ? (
           <DevelopersSection />
+        ) : activePage === 'premium' ? (
+          <PremiumPage />
+        ) : activePage === 'team' ? (
+          <TeamPage />
         ) : (
           <>
             <section className="hero" id="translate-tone">
@@ -777,7 +813,7 @@ const closeLearnMore = () => {
                   <li><span className="plan-icon">♢</span> Tone-preserving translation</li>
                 </ul>
               </div>
-              <button className="btn primary">Go Premium</button>
+              <button className="btn primary" type="button" onClick={() => handleProtectedPlanOpen('premium')}>Go Premium</button>
             </article>
             <article className="pricing-card">
 
@@ -796,7 +832,7 @@ const closeLearnMore = () => {
                   <li><span className="plan-icon">☍</span> Team history & collaboration support</li>
                 </ul>
               </div>
-              <button className="btn ghost">Go Team</button>
+              <button className="btn ghost" type="button" onClick={() => handleProtectedPlanOpen('team')}>Go Team</button>
             </article>
           </div>
         </section>

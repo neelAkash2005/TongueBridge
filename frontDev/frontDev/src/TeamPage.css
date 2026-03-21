@@ -1,0 +1,34 @@
+.team-page {
+  padding: 3rem 0 4rem;
+  text-align: center;
+}
+
+.team-brand {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.team-page h1 {
+  margin: 0.55rem 0 0.4rem;
+  font-family: 'Fraunces', serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.team-subtitle {
+  margin: 0 0 2rem;
+  opacity: 0.8;
+}
+
+.team-tools-card {
+  width: min(92vw, 560px);
+  margin: 0 auto;
+  text-align: left;
+}
+
+.team-tools-card textarea {
+  margin-bottom: 0.85rem;
+}
