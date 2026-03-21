@@ -422,9 +422,9 @@ const closeLearnMore = () => {
       TongueBridge solves this by:
       
       <ul>
-        <li>Understanding the full meaning of sentences</li>
-        <li>Adapting translations based on formal, casual, or conversational tone</li>
-        <li>Delivering output that feels natural and human-written</li>
+        <li> Understanding the full meaning of sentences </li>
+        <li> Adapting translations based on formal, casual, or conversational tone </li>
+        <li> Delivering output that feels natural and human-written </li>
       </ul>
 
       This ensures your message is not just translated — but understood correctly.  
@@ -454,34 +454,38 @@ const closeLearnMore = () => {
     <ul> 
       <li> Speech-to-text translation </li>
       <li> Text-to-speech output </li>
-      <li> Accent detection </li>
+      <li> Accent detection (future scope) </li>
     </ul>
 
       🔹 AI-Powered Enhancements
     <ul>
-      <li>Language detection </li>
-      <li>Emotion-aware suggestions (future scope) </li>
-      <li>Natural phrasing improvements </li>
+      <li> Language detection </li>
+      <li> Emotion-aware suggestions (future scope) </li>
+      <li> Natural phrasing improvements </li>
+      <li> Tone-Preserving translation </li>
     </ul>
 
       🔹 Advanced Inputs
     <ul>
       <li> Image-to-text translation </li>
       <li> Document translation (PDF, Word, Excel) </li>
+      <li> Website translation </li>
+      <li> Handwriting recognition (future scope) </li>
+      <li> Industry-specific language packs (future scope) </li>
       <li> Real-time text processing </li>
     </ul>
 
       🔹 User Experience
     <ul>
       <li> Simple and clean UI </li>
-      <li> Fast responses for quick communication</li>
-      <li> Translation history tracking</li>
+      <li> Fast responses for quick communication </li>
+      <li> Translation history tracking </li>
     </ul>
 
       🔹 Security
     <ul>
-      <li>User data and text are handled securely </li>
-      <li>Privacy-first design approach </li>
+      <li> User data and text are handled securely </li>
+      <li> Privacy-first design approach </li>
     </ul> <br /><br />
 
 
@@ -489,32 +493,30 @@ const closeLearnMore = () => {
 
       🟢 Free (₹0)
     <ul>
-      <li> 1 Device </li>
+      <li> 1 user </li>
       <li> 5–6 searches daily </li>
-      <li> Basic audio translation </li>
-      <li> Language detection only </li>
-      <li> Limited image-to-text (up to 9 images) </li>
+      <li> Basic audio translation (limited) </li>
+      <li> Limited image-to-text translation (up to 9 images) </li>
     </ul>
     
       🔵 Premium (₹349)
     <ul>
-      <li> Up to 3 devices </li>
-      <li>Unlimited searches</li>
-      <li>Unlimited audio translation (per device)</li>
-      <li>Language detection + translation</li>
-      <li>Image-to-text (up to 19 images)</li>
-      <li>Document translation (up to 100 files)</li>
-      <li>Industry-specific language packs</li>
+      <li> 1 user </li>
+      <li> Unlimited searches</li>
+      <li> Unlimited text and audio translation </li>
+      <li> Language detection + translation </li>
+      <li> Image-to-text translation (unlimited) </li>
+      <li> Document translation  </li>
+      <li> Website translation </li>
+      <li> Tone-Preserving translation </li>
     </ul>
     
       🟣 Team (₹999)
     <ul>
-      <li>Up to 6 devices </li>
-      <li>Unlimited usage </li>
-      <li>Full audio translation access</li>
-      <li>Advanced language detection + translation</li>
-      <li>Extended image & document limits</li>
-      <li>Shared team access</li>
+      <li> Up to 6 users </li>
+      <li> Shared access to features and translations </li>
+      <li> Faster processing </li>
+      <li> team history and collaboration support </li>
     </ul> <br /><br />
       
       
