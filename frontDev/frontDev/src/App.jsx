@@ -8,6 +8,7 @@ import Dev4 from './assets/Dev4.jpeg';
 import Dev5 from './assets/Dev5.jpeg';
 import Dev6 from './assets/Dev6.jpg';
 import { useEffect, useState } from 'react';
+import FreePlanTools from './FreePlanTools.jsx';
 
 // --- NEW: Team Data Array for 6 Developers ---
 const teamMembers = [
@@ -139,6 +140,7 @@ function App() {
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
   const [showOutput, setShowOutput] = useState(false);
+  const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
   const [loggedInUsername, setLoggedInUsername] = useState('');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -164,7 +166,8 @@ function App() {
   const handleClear = () => {
     setInputText('');
     setOutputText('');
-    setShowOutput(false); 
+    setShowOutput(false);
+    setFreeToolsResetTrigger((previous) => previous + 1);
   };
 
   const openSignUp = () => {
@@ -688,6 +691,8 @@ const closeLearnMore = () => {
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                 />
+
+                <FreePlanTools resetTrigger={freeToolsResetTrigger} />
 
                 {showOutput && (
                   <textarea
