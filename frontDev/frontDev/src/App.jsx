@@ -724,42 +724,77 @@ const closeLearnMore = () => {
               </article>
             </section>
 
-            <section className="pricing" id="pricing">
-              <div className="pricing-header">
-                <h2>Premium plans that scale with you</h2>
-                <p>
-                  Start free, then upgrade when you want tone controls, saved phrases,
-                  and richer language nuance
-                </p>
+        <section className="pricing" id="pricing">
+          <div className="pricing-header">
+            <h2>Premium plans that scale with you</h2>
+            <p>
+              Start free, then upgrade when you want tone controls, saved phrases,
+              and richer language nuance
+            </p>
+          </div>
+          <div className="pricing-cards">
+            <article className="pricing-card">
+
+              <h3>Free</h3>
+              See what Smarter Translation can do. Upgrade anytime for more power and control
+
+              <p className="price">
+                &nbsp;&nbsp; ₹0<span>/mo</span>
+              </p>
+              <div className="plan-note">
+                <p className="plan-lead">✦ Perfect to get started:</p> <br />
+                <ul className="plan-list">
+                  <li><span className="plan-icon">◈</span> 5-6 translations per day</li>
+                  <li><span className="plan-icon">✎</span> Text translation (limited)</li>
+                  <li><span className="plan-icon">♫</span> Audio translation (limited)</li>
+                  <li><span className="plan-icon">◉</span> Image-to-text translation (limited - up to 9 images)</li>
+                </ul>
               </div>
-              <div className="pricing-cards">
-                <article className="pricing-card">
-                  <h3>Free</h3>
-                  <p className="price">$0</p>
-                  <p className="plan-note">Everyday translations and basic tone</p>
-                  <button className="btn ghost">Keep free</button>
-                </article>
-                <article className="pricing-card highlight">
-                  <span className="chip">Most popular</span>
-                  <h3>Premium</h3>
-                  <p className="price">
-                    $12<span>/mo</span>
-                  </p>
-                  <p className="plan-note">
-                    Pro tone controls, phrase library, and private history
-                  </p>
-                  <button className="btn primary">Go Premium</button>
-                </article>
-                <article className="pricing-card">
-                  <h3>Team</h3>
-                  <p className="price">
-                    $24<span>/mo</span>
-                  </p>
-                  <p className="plan-note">Shared glossaries and admin controls</p>
-                  <button className="btn ghost">Contact sales</button>
-                </article>
+              <button className="btn ghost">Keep free</button>
+            </article>
+            <article className="pricing-card highlight">
+              <span className="chip">Most popular</span>
+
+              <h3>Premium</h3>
+              Experience Translation without limits, with advanced features
+
+              <p className="price">
+                &nbsp;&nbsp; ₹249<span>/mo</span>
+              </p>
+              <div className="plan-note">
+                <p className="plan-lead">✦ Everything in Free, plus:</p><br />
+                <ul className="plan-list">
+                  <li><span className="plan-icon">∞</span> Unlimited text & audio translation</li>
+                  <li><span className="plan-icon">◎</span> Language detection with translation</li>
+                  <li><span className="plan-icon">◉</span> Image-to-Text translation (unlimited)</li>
+                  <li><span className="plan-icon">▣</span> Document translation</li>
+                  <li><span className="plan-icon">⌁</span> Website translation</li>
+                  <li><span className="plan-icon">♢</span> Tone-preserving translation</li>
+                </ul>
               </div>
-            </section>
+              <button className="btn primary">Go Premium</button>
+            </article>
+            <article className="pricing-card">
+
+              <h3>Team</h3>
+              Built for Teams and Shared access
+
+              <p className="price">
+                &nbsp;&nbsp; ₹999<span>/mo</span>
+              </p>
+              <div className="plan-note">
+                <p className="plan-lead">✦ Everything in Premium, plus:</p> <br />
+                <ul className="plan-list">
+                  <li><span className="plan-icon">◍</span> Up to 6 users (shared access across devices)</li>
+                  <li><span className="plan-icon">⟡</span> Shared access to features & translations</li>
+                  <li><span className="plan-icon">⚡</span> Faster processing</li>
+                  <li><span className="plan-icon">☍</span> Team history & collaboration support</li>
+                </ul>
+              </div>
+              <button className="btn ghost">Go Team</button>
+            </article>
+          </div>
+        </section>
 
             <section className="split" id="about">
               <div>
