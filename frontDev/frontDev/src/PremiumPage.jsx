@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import { detectLanguage } from './languageDetect.js';
+import { applyTonePreservingText } from './tonePreserving.js';
 import './PremiumPage.css';
 
 function PremiumPage() {
@@ -9,6 +10,7 @@ function PremiumPage() {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [showOutput, setShowOutput] = useState(false);
+  const [toneMode, setToneMode] = useState('neutral');
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
   const detectedLanguage = detectLanguage(inputText);
 
@@ -20,7 +22,7 @@ function PremiumPage() {
 
   const handleTranslate = () => {
     if (inputText.trim() === '') return;
-    setOutputText(inputText);
+    setOutputText(applyTonePreservingText(inputText, toneMode));
     setShowOutput(true);
   };
 
@@ -83,9 +85,27 @@ function PremiumPage() {
             onChange={(event) => setInputText(event.target.value)}
           />
 
-          <p className="detected-language-line">
-            Detect language: <span>{inputText.trim() ? `${detectedLanguage} - detected` : detectedLanguage}</span>
-          </p>
+          <div className="detect-tone-row">
+            <p className="detected-language-line">
+              Detect language: <span>{inputText.trim() ? `${detectedLanguage} - detected` : detectedLanguage}</span>
+            </p>
+
+            <div className="tone-control">
+              <label htmlFor="premium-tone-select">
+                Tone preserving <span className="tone-star">✦</span>
+              </label>
+              <select
+                id="premium-tone-select"
+                value={toneMode}
+                onChange={(event) => setToneMode(event.target.value)}
+                aria-label="Tone preserving mode"
+              >
+                <option value="neutral">Neutral</option>
+                <option value="formal">Formal</option>
+                <option value="casual">Casual</option>
+              </select>
+            </div>
+          </div>
 
           <FreePlanTools resetTrigger={freeToolsResetTrigger} showAdvanced />
 
