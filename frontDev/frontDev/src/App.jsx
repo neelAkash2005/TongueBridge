@@ -142,6 +142,8 @@ function App() {
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
   const [showOutput, setShowOutput] = useState(false);
+  const [homeHistory, setHomeHistory] = useState([]);
+  const [showHomeHistorySidebar, setShowHomeHistorySidebar] = useState(false);
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
   const [loggedInUsername, setLoggedInUsername] = useState('');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -162,8 +164,25 @@ function App() {
 
   const handleTranslate = () => {
     if (inputText.trim() === '') return;
-    setOutputText(inputText); 
+    const result = inputText;
+    setOutputText(result); 
     setShowOutput(true); 
+
+    setHomeHistory((previousHistory) => [
+      {
+        id: Date.now(),
+        input: inputText,
+        output: result,
+        fromLang,
+        toLang,
+        timestamp: new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        }),
+      },
+      ...previousHistory.slice(0, 49),
+    ]);
   };
 
   const handleClear = () => {
@@ -171,6 +190,21 @@ function App() {
     setOutputText('');
     setShowOutput(false);
     setFreeToolsResetTrigger((previous) => previous + 1);
+  };
+
+  const handleDeleteHomeHistory = () => {
+    if (window.confirm('Are you sure you want to delete all history?')) {
+      setHomeHistory([]);
+    }
+  };
+
+  const loadFromHomeHistory = (item) => {
+    setFromLang(item.fromLang);
+    setToLang(item.toLang);
+    setInputText(item.input);
+    setOutputText(item.output);
+    setShowOutput(true);
+    setShowHomeHistorySidebar(false);
   };
 
   const openSignUp = () => {
@@ -255,6 +289,25 @@ const closeLearnMore = () => {
       localStorage.setItem('darkMode', 'false');
     }
   }, [isDarkMode]);
+
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem('homeTranslationHistory');
+      if (savedHistory) {
+        setHomeHistory(JSON.parse(savedHistory));
+      }
+    } catch (error) {
+      console.error('Failed to load home history:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('homeTranslationHistory', JSON.stringify(homeHistory));
+    } catch (error) {
+      console.error('Failed to save home history:', error);
+    }
+  }, [homeHistory]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -647,6 +700,49 @@ const closeLearnMore = () => {
         ) : (
           <>
             <section className="hero" id="translate-tone">
+              <div className={`home-history-sidebar ${showHomeHistorySidebar ? 'open' : ''}`}>
+                <div className="home-sidebar-header">
+                  <h3>History</h3>
+                  <button
+                    className="home-close-btn"
+                    onClick={() => setShowHomeHistorySidebar(false)}
+                    title="Close history"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {homeHistory.length > 0 ? (
+                  <>
+                    <div className="home-history-list">
+                      {homeHistory.map((item) => (
+                        <div
+                          key={item.id}
+                          className="home-history-item"
+                          onClick={() => loadFromHomeHistory(item)}
+                        >
+                          <div className="home-history-meta">
+                            <span className="home-history-langs">{item.fromLang.slice(0, 3)} → {item.toLang.slice(0, 3)}</span>
+                          </div>
+                          <p className="home-history-input">{item.input.substring(0, 60)}{item.input.length > 60 ? '...' : ''}</p>
+                          <p className="home-history-output">{item.output.substring(0, 60)}{item.output.length > 60 ? '...' : ''}</p>
+                          <span className="home-history-time">{item.timestamp}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button className="home-delete-history-btn" onClick={handleDeleteHomeHistory}>
+                      🗑️ Delete All
+                    </button>
+                  </>
+                ) : (
+                  <div className="home-history-empty">No translations yet</div>
+                )}
+              </div>
+
+              {showHomeHistorySidebar && (
+                <div className="home-sidebar-overlay" onClick={() => setShowHomeHistorySidebar(false)} />
+              )}
+
               <div className="hero-text">
                 <p className="eyebrow">A translator that feels like a real person</p>
                 <h1>Translate with tone, not just words</h1>
@@ -742,6 +838,13 @@ const closeLearnMore = () => {
 
                 <div className="card-actions">
                   <button className="btn primary" onClick={handleTranslate}>Translate</button>
+                  <button
+                    className="home-history-toggle-btn"
+                    onClick={() => setShowHomeHistorySidebar(!showHomeHistorySidebar)}
+                    title="Open history"
+                  >
+                    📋 History {homeHistory.length > 0 && `(${homeHistory.length})`}
+                  </button>
                   <button className="btn ghost" onClick={handleClear}>Clear</button>
                 </div>
               </div>
