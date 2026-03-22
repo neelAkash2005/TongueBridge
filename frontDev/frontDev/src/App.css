@@ -1763,6 +1763,250 @@ main {
   backdrop-filter: blur(6px);
 }
 
+.payment-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2150;
+  backdrop-filter: blur(6px);
+}
+
+.payment-box {
+  background: #fffaf6;
+  color: var(--ink);
+  width: min(90vw, 460px);
+  padding: 1.6rem;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  position: relative;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+.payment-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.payment-close-btn:hover {
+  opacity: 0.7;
+}
+
+.payment-box h2 {
+  margin: 0 0 0.55rem;
+  font-family: 'Fraunces', serif;
+}
+
+.payment-description {
+  margin: 0 0 1rem;
+  opacity: 0.8;
+}
+
+.payment-plan-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid rgba(15, 18, 33, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  margin-bottom: 1rem;
+}
+
+.payment-plan-name {
+  display: block;
+  font-weight: 700;
+}
+
+.payment-plan-sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+.payment-features h4,
+.payment-methods h4 {
+  margin: 0 0 0.55rem;
+  font-size: 0.92rem;
+}
+
+.payment-features {
+  margin-bottom: 0.9rem;
+}
+
+.payment-features ul {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.86rem;
+}
+
+.payment-method-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.payment-method-btn {
+  border: 1px solid rgba(15, 18, 33, 0.15);
+  background: rgba(255, 255, 255, 0.74);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.payment-method-btn:hover {
+  border-color: rgba(15, 18, 33, 0.32);
+}
+
+.payment-method-btn.active {
+  background: rgba(243, 186, 98, 0.28);
+  border-color: rgba(243, 186, 98, 0.75);
+}
+
+.payment-field-group {
+  display: grid;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+
+.payment-field-group label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.payment-sub-label {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.78;
+}
+
+.payment-or-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.55rem 0 0.15rem;
+}
+
+.payment-or-divider::before,
+.payment-or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(15, 18, 33, 0.2);
+}
+
+.payment-or-divider span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+}
+
+.upi-app-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.upi-app-btn {
+  border: 1px solid rgba(15, 18, 33, 0.18);
+  background: rgba(255, 255, 255, 0.84);
+  border-radius: 10px;
+  padding: 0.52rem 0.6rem;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.upi-app-btn:hover {
+  border-color: rgba(15, 18, 33, 0.34);
+}
+
+.upi-app-btn.active {
+  background: rgba(243, 186, 98, 0.28);
+  border-color: rgba(243, 186, 98, 0.75);
+}
+
+.upi-process-box {
+  margin-top: 0.3rem;
+  border: 1px dashed rgba(15, 18, 33, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.74);
+  padding: 0.65rem 0.75rem;
+}
+
+.upi-process-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.upi-process-box ol {
+  margin: 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.payment-field-group input,
+.payment-field-group select {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 18, 33, 0.15);
+  padding: 0.58rem 0.68rem;
+  font-family: 'Space Grotesk', sans-serif;
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--ink);
+}
+
+.payment-field-group input:focus,
+.payment-field-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(243, 186, 98, 0.15);
+}
+
+.payment-inline-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+.payment-security-note {
+  margin: 0.15rem 0 0.9rem;
+  font-size: 0.78rem;
+  opacity: 0.78;
+}
+
+.payment-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
 /* Box stays centered but scrolls inside */
 .learnmore-box {
   background: #fffaf6;
@@ -1781,6 +2025,74 @@ main {
 :root.dark-mode .learnmore-box {
   background: rgba(30, 30, 30, 0.95);
   color: #f5f5f5;
+}
+
+:root.dark-mode .payment-box {
+  background: rgba(30, 30, 30, 0.96);
+  color: #f5f5f5;
+}
+
+:root.dark-mode .payment-close-btn {
+  color: #f5f5f5;
+}
+
+:root.dark-mode .payment-plan-row {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+:root.dark-mode .payment-method-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #f5f5f5;
+}
+
+:root.dark-mode .payment-method-btn.active {
+  background: rgba(243, 186, 98, 0.28);
+  border-color: rgba(243, 186, 98, 0.75);
+  color: #f8e6cf;
+}
+
+:root.dark-mode .payment-field-group input,
+:root.dark-mode .payment-field-group select {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #f5f5f5;
+}
+
+:root.dark-mode .upi-app-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #f5f5f5;
+}
+
+:root.dark-mode .upi-app-btn.active {
+  background: rgba(243, 186, 98, 0.28);
+  border-color: rgba(243, 186, 98, 0.75);
+  color: #f8e6cf;
+}
+
+:root.dark-mode .upi-process-box {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:root.dark-mode .payment-or-divider::before,
+:root.dark-mode .payment-or-divider::after {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+:root.dark-mode .payment-or-divider span {
+  opacity: 0.82;
+}
+
+:root.dark-mode .payment-field-group select option {
+  background: rgba(20, 20, 20, 0.95);
+  color: #f5f5f5;
+}
+
+:root.dark-mode .payment-security-note {
+  opacity: 0.86;
 }
 
 /* Close button */

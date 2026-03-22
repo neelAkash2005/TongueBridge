@@ -151,8 +151,42 @@ function App() {
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [activeLegalModal, setActiveLegalModal] = useState(null);
   const [pendingPlanPage, setPendingPlanPage] = useState(null);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [selectedUpiApp, setSelectedUpiApp] = useState('');
+  const [upiId, setUpiId] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvv, setCardCvv] = useState('');
+  const [netBank, setNetBank] = useState('');
+  const [walletProvider, setWalletProvider] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
+
+  const planDetails = {
+    premium: {
+      title: 'Premium Plan',
+      price: '₹249/mo',
+      features: [
+        'Unlimited text and audio translations',
+        'Tone-preserving translation engine',
+        'Document and website translation',
+        'Image-to-text translation without limits',
+      ],
+    },
+    team: {
+      title: 'Team Plan',
+      price: '₹999/mo',
+      features: [
+        'Up to 6 members on one workspace',
+        'Shared translation history and activity',
+        'Priority processing and team performance',
+        'All Premium features included',
+      ],
+    },
+  };
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -209,6 +243,58 @@ function App() {
     setShowHomeHistorySidebar(false);
   };
 
+  const openPaymentForPlan = (plan) => {
+    setSelectedPlan(plan);
+    setPaymentMethod('upi');
+    setSelectedUpiApp('');
+    setUpiId('');
+    setCardNumber('');
+    setCardName('');
+    setCardExpiry('');
+    setCardCvv('');
+    setNetBank('');
+    setWalletProvider('');
+    setIsPaymentOpen(true);
+  };
+
+  const closePaymentModal = () => {
+    setIsPaymentOpen(false);
+    setSelectedPlan(null);
+  };
+
+  const handlePaymentSuccess = () => {
+    if (!selectedPlan) return;
+
+    if (paymentMethod === 'upi' && !upiId.trim() && !selectedUpiApp) {
+      window.alert('Please enter your UPI ID or choose a UPI app.');
+      return;
+    }
+
+    if (paymentMethod === 'card') {
+      if (!cardNumber.trim() || !cardName.trim() || !cardExpiry.trim() || !cardCvv.trim()) {
+        window.alert('Please complete all card details.');
+        return;
+      }
+    }
+
+    if (paymentMethod === 'netbanking' && !netBank) {
+      window.alert('Please select a bank for net banking.');
+      return;
+    }
+
+    if (paymentMethod === 'wallet' && !walletProvider) {
+      window.alert('Please select a wallet provider.');
+      return;
+    }
+
+    const planLabel = selectedPlan === 'premium' ? 'Premium' : 'Team';
+    window.alert(`${planLabel} payment successful.`);
+    setIsPaymentOpen(false);
+    setActivePage(selectedPlan);
+    setSelectedPlan(null);
+    setPendingPlanPage(null);
+  };
+
   const openSignUp = () => {
     setAuthMode('signup');
     setIsAuthOpen(true);
@@ -221,7 +307,7 @@ function App() {
 
   const handleProtectedPlanOpen = (targetPage) => {
     if (loggedInUsername) {
-      setActivePage(targetPage);
+      openPaymentForPlan(targetPage);
       return;
     }
 
@@ -233,9 +319,10 @@ function App() {
 
   const handleLoginSuccess = (username) => {
     setLoggedInUsername(username);
+    setIsAuthOpen(false);
     window.alert(`Logged in successfully as ${username}.`);
     if (pendingPlanPage) {
-      setActivePage(pendingPlanPage);
+      openPaymentForPlan(pendingPlanPage);
       setPendingPlanPage(null);
     }
   };
@@ -269,6 +356,8 @@ const closeLearnMore = () => {
     setLoggedInUsername('');
     setActivePage('home');
     setPendingPlanPage(null);
+    setIsPaymentOpen(false);
+    setSelectedPlan(null);
     setIsUserMenuOpen(false);
   };
 
@@ -564,6 +653,187 @@ const closeLearnMore = () => {
           onLoginSuccess={handleLoginSuccess}
           onSignUpSuccess={handleSignUpSuccess}
         />
+      ) : null}
+
+      {isPaymentOpen && selectedPlan ? (
+        <div className="payment-overlay">
+          <div className="payment-box">
+            <button className="payment-close-btn" onClick={closePaymentModal} type="button">✖</button>
+            <h2>Secure Checkout</h2>
+            <p className="payment-description">
+              Complete your payment to activate <strong>{planDetails[selectedPlan].title}</strong>.
+            </p>
+
+            <div className="payment-plan-row">
+              <div>
+                <span className="payment-plan-name">{planDetails[selectedPlan].title}</span>
+                <p className="payment-plan-sub">Billed monthly • Cancel anytime</p>
+              </div>
+              <strong>{planDetails[selectedPlan].price}</strong>
+            </div>
+
+            <div className="payment-features">
+              <h4>Included in this plan</h4>
+              <ul>
+                {planDetails[selectedPlan].features.map((feature) => (
+                  <li key={feature}>✓ {feature}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="payment-methods">
+              <h4>Payment method</h4>
+              <div className="payment-method-grid">
+                <button
+                  type="button"
+                  className={`payment-method-btn ${paymentMethod === 'upi' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('upi')}
+                >
+                  UPI
+                </button>
+                <button
+                  type="button"
+                  className={`payment-method-btn ${paymentMethod === 'card' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('card')}
+                >
+                  Card
+                </button>
+                <button
+                  type="button"
+                  className={`payment-method-btn ${paymentMethod === 'netbanking' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('netbanking')}
+                >
+                  Net Banking
+                </button>
+                <button
+                  type="button"
+                  className={`payment-method-btn ${paymentMethod === 'wallet' ? 'active' : ''}`}
+                  onClick={() => setPaymentMethod('wallet')}
+                >
+                  Wallet
+                </button>
+              </div>
+            </div>
+
+            {paymentMethod === 'upi' ? (
+              <div className="payment-field-group">
+                <label htmlFor="upi-id">UPI ID</label>
+                <input
+                  id="upi-id"
+                  type="text"
+                  value={upiId}
+                  onChange={(event) => setUpiId(event.target.value)}
+                  placeholder="example@upi"
+                />
+
+                <div className="payment-or-divider">
+                  <span>OR</span>
+                </div>
+
+                <p className="payment-sub-label">Or pay instantly with UPI Apps</p>
+                <div className="upi-app-grid">
+                  {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI'].map((appName) => (
+                    <button
+                      key={appName}
+                      type="button"
+                      className={`upi-app-btn ${selectedUpiApp === appName ? 'active' : ''}`}
+                      onClick={() => setSelectedUpiApp(appName)}
+                    >
+                      {appName}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="upi-process-box">
+                  <p className="upi-process-title">UPI Payment Process</p>
+                  <ol>
+                    <li>Choose your UPI app or enter UPI ID.</li>
+                    <li>Tap <strong>Pay</strong> to send a collect request.</li>
+                    <li>Approve payment in your app to activate the plan instantly.</li>
+                  </ol>
+                </div>
+              </div>
+            ) : null}
+
+            {paymentMethod === 'card' ? (
+              <div className="payment-field-group">
+                <label htmlFor="card-number">Card Number</label>
+                <input
+                  id="card-number"
+                  type="text"
+                  value={cardNumber}
+                  onChange={(event) => setCardNumber(event.target.value)}
+                  placeholder="1234 5678 9012 3456"
+                />
+                <label htmlFor="card-name">Cardholder Name</label>
+                <input
+                  id="card-name"
+                  type="text"
+                  value={cardName}
+                  onChange={(event) => setCardName(event.target.value)}
+                  placeholder="Name on card"
+                />
+                <div className="payment-inline-fields">
+                  <div>
+                    <label htmlFor="card-expiry">Expiry</label>
+                    <input
+                      id="card-expiry"
+                      type="text"
+                      value={cardExpiry}
+                      onChange={(event) => setCardExpiry(event.target.value)}
+                      placeholder="MM/YY"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="card-cvv">CVV</label>
+                    <input
+                      id="card-cvv"
+                      type="password"
+                      value={cardCvv}
+                      onChange={(event) => setCardCvv(event.target.value)}
+                      placeholder="123"
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {paymentMethod === 'netbanking' ? (
+              <div className="payment-field-group">
+                <label htmlFor="netbank">Select Bank</label>
+                <select id="netbank" value={netBank} onChange={(event) => setNetBank(event.target.value)}>
+                  <option value="">Choose your bank</option>
+                  <option value="sbi">State Bank of India</option>
+                  <option value="hdfc">HDFC Bank</option>
+                  <option value="icici">ICICI Bank</option>
+                  <option value="axis">Axis Bank</option>
+                </select>
+              </div>
+            ) : null}
+
+            {paymentMethod === 'wallet' ? (
+              <div className="payment-field-group">
+                <label htmlFor="wallet">Select Wallet</label>
+                <select id="wallet" value={walletProvider} onChange={(event) => setWalletProvider(event.target.value)}>
+                  <option value="">Choose wallet</option>
+                  <option value="paytm">Paytm</option>
+                  <option value="phonepe">PhonePe</option>
+                  <option value="amazonpay">Amazon Pay</option>
+                  <option value="mobikwik">MobiKwik</option>
+                </select>
+              </div>
+            ) : null}
+
+            <p className="payment-security-note">🔒 256-bit encrypted payment • PCI-DSS compliant</p>
+
+            <div className="payment-actions">
+              <button className="btn ghost" type="button" onClick={closePaymentModal}>Cancel</button>
+              <button className="btn primary" type="button" onClick={handlePaymentSuccess}>
+                Pay {planDetails[selectedPlan].price}
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {isLearnMoreOpen ? (
