@@ -118,7 +118,11 @@ function FreePlanTools({ resetTrigger, showAdvanced = false }) {
         />
       </div>
 
-      {isListening ? <p className="free-tool-note">🎙️ Mic active (limited access)</p> : null}
+      {isListening ? (
+        <p className="free-tool-note">
+          {showAdvanced ? '🎙️ Mic activated' : '🎙️ Mic active (limited access)'}
+        </p>
+      ) : null}
       {uploadedImageName ? <p className="free-tool-note">🖼️ Selected image: {uploadedImageName}</p> : null}
       {showAdvanced && uploadedDocumentName ? <p className="free-tool-note">📄 Selected document: {uploadedDocumentName}</p> : null}
       {showAdvanced && websiteUrl ? <p className="free-tool-note">🌐 Website: {websiteUrl}</p> : null}
