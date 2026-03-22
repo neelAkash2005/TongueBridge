@@ -7,6 +7,9 @@ import Dev3 from './assets/Dev3.jpeg';
 import Dev4 from './assets/Dev4.jpeg';
 import Dev5 from './assets/Dev5.jpeg';
 import Dev6 from './assets/Dev6.jpg';
+import phonepeLogo from './assets/PhonePay.svg';
+import googlePayLogo from './assets/googlepay.svg';
+import bhimLogo from './assets/bhim.svg';
 import { useEffect, useRef, useState } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import PremiumPage from './PremiumPage.jsx';
@@ -146,24 +149,43 @@ function App() {
   const [showHomeHistorySidebar, setShowHomeHistorySidebar] = useState(false);
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
   const [loggedInUsername, setLoggedInUsername] = useState('');
+  const [loggedInEmail, setLoggedInEmail] = useState('');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [activeLegalModal, setActiveLegalModal] = useState(null);
   const [pendingPlanPage, setPendingPlanPage] = useState(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [showPaymentMethodsScreen, setShowPaymentMethodsScreen] = useState(false);
+  const [showCardForm, setShowCardForm] = useState(false);
+  const [showUpiOptions, setShowUpiOptions] = useState(false);
+  const [showRedeemPanel, setShowRedeemPanel] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [paymentMethod, setPaymentMethod] = useState('card');
   const [selectedUpiApp, setSelectedUpiApp] = useState('');
   const [upiId, setUpiId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
+  const [cardCountry, setCardCountry] = useState('');
+  const [cardState, setCardState] = useState('');
+  const [redeemCode, setRedeemCode] = useState('');
+  const [giftCardFileName, setGiftCardFileName] = useState('');
   const [netBank, setNetBank] = useState('');
   const [walletProvider, setWalletProvider] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
+  const giftCardInputRef = useRef(null);
+
+  const upiApps = [
+    { name: 'PhonePe', key: 'phonepe', logo: phonepeLogo, icon: 'अ' },
+    { name: 'Google Pay', key: 'gpay', logo: googlePayLogo, icon: 'G' },
+    { name: 'BHIM', key: 'bhim', logo: bhimLogo, icon: 'भी' },
+    { name: 'Enter UPI ID', key: 'upiid', logo: null, icon: '+' },
+  ];
+
+  const selectedUpiAppDetails = upiApps.find((appItem) => appItem.name === selectedUpiApp) || upiApps[0];
 
   const planDetails = {
     premium: {
@@ -245,13 +267,21 @@ function App() {
 
   const openPaymentForPlan = (plan) => {
     setSelectedPlan(plan);
-    setPaymentMethod('upi');
-    setSelectedUpiApp('');
+    setShowPaymentMethodsScreen(false);
+    setShowCardForm(false);
+    setShowUpiOptions(false);
+    setShowRedeemPanel(false);
+    setPaymentMethod('card');
+    setSelectedUpiApp('PhonePe');
     setUpiId('');
     setCardNumber('');
     setCardName('');
     setCardExpiry('');
     setCardCvv('');
+    setCardCountry('');
+    setCardState('');
+    setRedeemCode('');
+    setGiftCardFileName('');
     setNetBank('');
     setWalletProvider('');
     setIsPaymentOpen(true);
@@ -259,19 +289,30 @@ function App() {
 
   const closePaymentModal = () => {
     setIsPaymentOpen(false);
+    setShowPaymentMethodsScreen(false);
+    setShowCardForm(false);
+    setShowUpiOptions(false);
+    setShowRedeemPanel(false);
     setSelectedPlan(null);
   };
 
   const handlePaymentSuccess = () => {
     if (!selectedPlan) return;
 
-    if (paymentMethod === 'upi' && !upiId.trim() && !selectedUpiApp) {
-      window.alert('Please enter your UPI ID or choose a UPI app.');
-      return;
+    if (paymentMethod === 'upi') {
+      if (selectedUpiApp === 'Enter UPI ID' && !upiId.trim()) {
+        window.alert('Please enter your UPI ID.');
+        return;
+      }
+
+      if (!upiId.trim() && !selectedUpiApp) {
+        window.alert('Please enter your UPI ID or choose a UPI app.');
+        return;
+      }
     }
 
     if (paymentMethod === 'card') {
-      if (!cardNumber.trim() || !cardName.trim() || !cardExpiry.trim() || !cardCvv.trim()) {
+      if (!cardNumber.trim() || !cardName.trim() || !cardExpiry.trim() || !cardCvv.trim() || !cardCountry || !cardState) {
         window.alert('Please complete all card details.');
         return;
       }
@@ -292,6 +333,9 @@ function App() {
     setIsPaymentOpen(false);
     setActivePage(selectedPlan);
     setSelectedPlan(null);
+    setShowCardForm(false);
+    setShowUpiOptions(false);
+    setShowRedeemPanel(false);
     setPendingPlanPage(null);
   };
 
@@ -317,8 +361,9 @@ function App() {
     setIsAuthOpen(true);
   };
 
-  const handleLoginSuccess = (username) => {
+  const handleLoginSuccess = (username, email) => {
     setLoggedInUsername(username);
+    setLoggedInEmail(email || '');
     setIsAuthOpen(false);
     window.alert(`Logged in successfully as ${username}.`);
     if (pendingPlanPage) {
@@ -354,9 +399,14 @@ const closeLearnMore = () => {
   const handleSignOut = () => {
     window.alert('Signed out successfully.');
     setLoggedInUsername('');
+    setLoggedInEmail('');
     setActivePage('home');
     setPendingPlanPage(null);
     setIsPaymentOpen(false);
+    setShowPaymentMethodsScreen(false);
+    setShowCardForm(false);
+    setShowUpiOptions(false);
+    setShowRedeemPanel(false);
     setSelectedPlan(null);
     setIsUserMenuOpen(false);
   };
@@ -657,182 +707,353 @@ const closeLearnMore = () => {
 
       {isPaymentOpen && selectedPlan ? (
         <div className="payment-overlay">
-          <div className="payment-box">
-            <button className="payment-close-btn" onClick={closePaymentModal} type="button">✖</button>
-            <h2>Secure Checkout</h2>
-            <p className="payment-description">
-              Complete your payment to activate <strong>{planDetails[selectedPlan].title}</strong>.
-            </p>
+          {!showPaymentMethodsScreen ? (
+            <div className="payment-box">
+              <button className="payment-close-btn" onClick={closePaymentModal} type="button">✖</button>
+              <h2>Secure Checkout</h2>
+              <p className="payment-description">
+                Complete your payment to activate <strong>{planDetails[selectedPlan].title}</strong>.
+              </p>
 
-            <div className="payment-plan-row">
-              <div>
-                <span className="payment-plan-name">{planDetails[selectedPlan].title}</span>
-                <p className="payment-plan-sub">Billed monthly • Cancel anytime</p>
-              </div>
-              <strong>{planDetails[selectedPlan].price}</strong>
-            </div>
-
-            <div className="payment-features">
-              <h4>Included in this plan</h4>
-              <ul>
-                {planDetails[selectedPlan].features.map((feature) => (
-                  <li key={feature}>✓ {feature}</li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="payment-methods">
-              <h4>Payment method</h4>
-              <div className="payment-method-grid">
-                <button
-                  type="button"
-                  className={`payment-method-btn ${paymentMethod === 'upi' ? 'active' : ''}`}
-                  onClick={() => setPaymentMethod('upi')}
-                >
-                  UPI
-                </button>
-                <button
-                  type="button"
-                  className={`payment-method-btn ${paymentMethod === 'card' ? 'active' : ''}`}
-                  onClick={() => setPaymentMethod('card')}
-                >
-                  Card
-                </button>
-                <button
-                  type="button"
-                  className={`payment-method-btn ${paymentMethod === 'netbanking' ? 'active' : ''}`}
-                  onClick={() => setPaymentMethod('netbanking')}
-                >
-                  Net Banking
-                </button>
-                <button
-                  type="button"
-                  className={`payment-method-btn ${paymentMethod === 'wallet' ? 'active' : ''}`}
-                  onClick={() => setPaymentMethod('wallet')}
-                >
-                  Wallet
-                </button>
-              </div>
-            </div>
-
-            {paymentMethod === 'upi' ? (
-              <div className="payment-field-group">
-                <label htmlFor="upi-id">UPI ID</label>
-                <input
-                  id="upi-id"
-                  type="text"
-                  value={upiId}
-                  onChange={(event) => setUpiId(event.target.value)}
-                  placeholder="example@upi"
-                />
-
-                <div className="payment-or-divider">
-                  <span>OR</span>
+              <div className="payment-plan-row">
+                <div>
+                  <span className="payment-plan-name">{planDetails[selectedPlan].title}</span>
+                  <p className="payment-plan-sub">Billed monthly • Cancel anytime</p>
                 </div>
+                <strong>{planDetails[selectedPlan].price}</strong>
+              </div>
 
-                <p className="payment-sub-label">Or pay instantly with UPI Apps</p>
-                <div className="upi-app-grid">
-                  {['Google Pay', 'PhonePe', 'Paytm', 'BHIM UPI'].map((appName) => (
-                    <button
-                      key={appName}
-                      type="button"
-                      className={`upi-app-btn ${selectedUpiApp === appName ? 'active' : ''}`}
-                      onClick={() => setSelectedUpiApp(appName)}
-                    >
-                      {appName}
-                    </button>
+              <div className="payment-features">
+                <h4>Included in this plan</h4>
+                <ul>
+                  {planDetails[selectedPlan].features.map((feature) => (
+                    <li key={feature}>✓ {feature}</li>
                   ))}
-                </div>
-
-                <div className="upi-process-box">
-                  <p className="upi-process-title">UPI Payment Process</p>
-                  <ol>
-                    <li>Choose your UPI app or enter UPI ID.</li>
-                    <li>Tap <strong>Pay</strong> to send a collect request.</li>
-                    <li>Approve payment in your app to activate the plan instantly.</li>
-                  </ol>
-                </div>
+                </ul>
               </div>
-            ) : null}
 
-            {paymentMethod === 'card' ? (
-              <div className="payment-field-group">
-                <label htmlFor="card-number">Card Number</label>
-                <input
-                  id="card-number"
-                  type="text"
-                  value={cardNumber}
-                  onChange={(event) => setCardNumber(event.target.value)}
-                  placeholder="1234 5678 9012 3456"
-                />
-                <label htmlFor="card-name">Cardholder Name</label>
-                <input
-                  id="card-name"
-                  type="text"
-                  value={cardName}
-                  onChange={(event) => setCardName(event.target.value)}
-                  placeholder="Name on card"
-                />
-                <div className="payment-inline-fields">
-                  <div>
-                    <label htmlFor="card-expiry">Expiry</label>
-                    <input
-                      id="card-expiry"
-                      type="text"
-                      value={cardExpiry}
-                      onChange={(event) => setCardExpiry(event.target.value)}
-                      placeholder="MM/YY"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="card-cvv">CVV</label>
-                    <input
-                      id="card-cvv"
-                      type="password"
-                      value={cardCvv}
-                      onChange={(event) => setCardCvv(event.target.value)}
-                      placeholder="123"
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {paymentMethod === 'netbanking' ? (
-              <div className="payment-field-group">
-                <label htmlFor="netbank">Select Bank</label>
-                <select id="netbank" value={netBank} onChange={(event) => setNetBank(event.target.value)}>
-                  <option value="">Choose your bank</option>
-                  <option value="sbi">State Bank of India</option>
-                  <option value="hdfc">HDFC Bank</option>
-                  <option value="icici">ICICI Bank</option>
-                  <option value="axis">Axis Bank</option>
-                </select>
-              </div>
-            ) : null}
-
-            {paymentMethod === 'wallet' ? (
-              <div className="payment-field-group">
-                <label htmlFor="wallet">Select Wallet</label>
-                <select id="wallet" value={walletProvider} onChange={(event) => setWalletProvider(event.target.value)}>
-                  <option value="">Choose wallet</option>
-                  <option value="paytm">Paytm</option>
-                  <option value="phonepe">PhonePe</option>
-                  <option value="amazonpay">Amazon Pay</option>
-                  <option value="mobikwik">MobiKwik</option>
-                </select>
-              </div>
-            ) : null}
-
-            <p className="payment-security-note">🔒 256-bit encrypted payment • PCI-DSS compliant</p>
-
-            <div className="payment-actions">
-              <button className="btn ghost" type="button" onClick={closePaymentModal}>Cancel</button>
-              <button className="btn primary" type="button" onClick={handlePaymentSuccess}>
-                Pay {planDetails[selectedPlan].price}
+              <button
+                className="btn primary payment-subscribe-btn"
+                type="button"
+                onClick={() => {
+                  setShowPaymentMethodsScreen(true);
+                  setPaymentMethod('upi');
+                  setShowCardForm(false);
+                  setShowUpiOptions(false);
+                  setShowRedeemPanel(false);
+                  setSelectedUpiApp('PhonePe');
+                }}
+              >
+                Subscribe now
               </button>
             </div>
-          </div>
+          ) : (
+            <div className="payment-mobile-screen" role="dialog" aria-label="Payment methods">
+              <header className="payment-mobile-header">
+                <button
+                  className="payment-mobile-back"
+                  type="button"
+                  onClick={() => setShowPaymentMethodsScreen(false)}
+                  aria-label="Back"
+                >
+                  ←
+                </button>
+                <div className="payment-mobile-header-text">
+                  <h3>Payment methods</h3>
+                  <p>{loggedInUsername.includes('@') ? loggedInUsername : `${loggedInUsername || 'user'}@tonguebridge.com`}</p>
+                </div>
+              </header>
+
+              <section className="payment-mobile-section">
+                <button className="payment-mobile-row selected" type="button">
+                  <span className="payment-row-left">
+                    <span className="payment-row-icon app-logo-image">
+                      {selectedUpiAppDetails.logo ? (
+                        <img src={selectedUpiAppDetails.logo} alt={selectedUpiAppDetails.name} className="payment-app-logo-img" />
+                      ) : (
+                        <span className="app-mark app-mark-upiid">+</span>
+                      )}
+                    </span>
+                    <span className="payment-row-text">UPI: {selectedUpiApp || 'PhonePe'}</span>
+                  </span>
+                  <span className="payment-row-right">✓</span>
+                </button>
+
+                <div className="payment-mobile-row disabled" aria-disabled="true">
+                  <span className="payment-row-left">
+                    <span className="payment-row-icon muted">◌</span>
+                    <span className="payment-row-text">Pay with any UPI app</span>
+                  </span>
+                </div>
+              </section>
+
+              <div className="payment-mobile-divider" />
+
+              <section className="payment-mobile-section">
+                <p className="payment-mobile-title">Add payment method to your Google Account</p>
+
+                <button
+                  className={`payment-mobile-row ${showCardForm ? 'active' : ''}`}
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod('card');
+                    setShowUpiOptions(false);
+                    setShowRedeemPanel(false);
+                    setShowCardForm((previous) => !previous);
+                  }}
+                >
+                  <span className="payment-row-left">
+                    <span className="payment-row-icon card">💳</span>
+                    <span className="payment-row-text">Add card</span>
+                  </span>
+                  <span className="payment-row-right cards-with-more">
+                    <span className="mini-card-chip visa-chip" aria-label="Visa">
+                      <span className="visa-word">VISA</span>
+                    </span>
+                    <span className="mini-card-chip mc-chip" aria-label="Mastercard">
+                      <span className="mc-circles" aria-hidden="true">
+                        <span className="mc-left" />
+                        <span className="mc-right" />
+                      </span>
+                    </span>
+                    <span className="mini-card-chip rupay-chip" aria-label="RuPay">
+                      <span className="rupay-word">RuPay</span>
+                    </span>
+                    <button
+                      className="mini-card-more"
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setPaymentMethod('card');
+                        setShowUpiOptions(false);
+                        setShowRedeemPanel(false);
+                        setShowCardForm(true);
+                      }}
+                    >
+                      +more
+                    </button>
+                  </span>
+                </button>
+
+                {showCardForm ? (
+                  <div className="payment-card-form">
+                    <p className="payment-card-required">All fields required</p>
+                    <div className="payment-card-fields-grid">
+                      <input
+                        type="text"
+                        value={cardNumber}
+                        onChange={(event) => setCardNumber(event.target.value)}
+                        placeholder="Card number"
+                      />
+                      <input
+                        type="text"
+                        value={cardName}
+                        onChange={(event) => setCardName(event.target.value)}
+                        placeholder="Card holder name"
+                      />
+                      <div className="payment-card-inline-fields">
+                        <input
+                          type="text"
+                          value={cardExpiry}
+                          onChange={(event) => setCardExpiry(event.target.value)}
+                          placeholder="MM/YY"
+                        />
+                        <input
+                          type="password"
+                          value={cardCvv}
+                          onChange={(event) => setCardCvv(event.target.value)}
+                          placeholder="CVV"
+                        />
+                      </div>
+                      <select value={cardCountry} onChange={(event) => setCardCountry(event.target.value)}>
+                        <option value="">Country/Region</option>
+                        <option value="india">India</option>
+                        <option value="united-states">United States</option>
+                        <option value="united-kingdom">United Kingdom</option>
+                        <option value="australia">Australia</option>
+                      </select>
+                      <select value={cardState} onChange={(event) => setCardState(event.target.value)}>
+                        <option value="">State</option>
+                        <option value="west-bengal">West Bengal</option>
+                        <option value="maharashtra">Maharashtra</option>
+                        <option value="karnataka">Karnataka</option>
+                        <option value="delhi">Delhi</option>
+                      </select>
+                    </div>
+                    <p className="payment-card-terms">
+                      By continuing, you agree to the Google Payments <span className="payment-terms-link">Terms of Service</span> and acknowledge the applicable privacy notice.
+                    </p>
+                    <button className="btn primary payment-card-continue" type="button" onClick={handlePaymentSuccess}>
+                      Continue
+                    </button>
+                  </div>
+                ) : null}
+
+                <button
+                  className={`payment-mobile-row ${showUpiOptions ? 'active' : ''}`}
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod('upi');
+                    setShowCardForm(false);
+                    setShowRedeemPanel(false);
+                    setShowUpiOptions((previous) => !previous);
+                  }}
+                >
+                  <span className="payment-row-left">
+                    <span className="payment-row-icon upi">UPI</span>
+                    <span>
+                      <span className="payment-row-text">Pay with UPI</span>
+                      <span className="payment-row-sub">Offers available from select UPI apps</span>
+                    </span>
+                  </span>
+                  <span className="payment-row-chevron" aria-hidden="true">{showUpiOptions ? '^' : '>'}</span>
+                </button>
+
+                {showUpiOptions ? (
+                  <div className="payment-upi-app-list" role="list">
+                    {upiApps.map((appItem) => (
+                      <button
+                        key={appItem.name}
+                        className={`payment-mobile-row payment-upi-app-row ${selectedUpiApp === appItem.name ? 'active' : ''}`}
+                        type="button"
+                        onClick={() => {
+                          if (appItem.name === 'Enter UPI ID') {
+                            setSelectedUpiApp((previous) => (previous === 'Enter UPI ID' ? '' : 'Enter UPI ID'));
+                            return;
+                          }
+
+                          setSelectedUpiApp(appItem.name);
+                        }}
+                      >
+                        <span className="payment-row-left">
+                          <span className={`payment-row-icon app-logo-image app-${appItem.key}`}>
+                            {appItem.logo ? (
+                              <img src={appItem.logo} alt={appItem.name} className="payment-app-logo-img" />
+                            ) : (
+                              <span className={`app-mark app-mark-${appItem.key}`}>{appItem.icon}</span>
+                            )}
+                          </span>
+                          <span className="payment-row-text">{appItem.name}</span>
+                        </span>
+                      </button>
+                    ))}
+
+                    {selectedUpiApp === 'Enter UPI ID' ? (
+                      <div className="payment-upi-input-box" role="group" aria-label="Enter UPI ID">
+                        <label htmlFor="upi-id-input">Enter UPI ID</label>
+                        <input
+                          id="upi-id-input"
+                          type="text"
+                          value={upiId}
+                          onChange={(event) => setUpiId(event.target.value)}
+                          placeholder="example@upi"
+                        />
+                        <p className="payment-upi-process-title">Processing</p>
+                        <ol className="payment-upi-process-list">
+                          <li>Enter your UPI ID correctly.</li>
+                          <li>Tap Continue to trigger payment request.</li>
+                          <li>Approve the request in your UPI app.</li>
+                        </ol>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </section>
+
+              <div className="payment-mobile-divider" />
+
+              <section className="payment-mobile-section">
+                <button
+                  className={`payment-mobile-row ${showRedeemPanel ? 'active' : ''}`}
+                  type="button"
+                  onClick={() => {
+                    setShowCardForm(false);
+                    setShowUpiOptions(false);
+                    setShowRedeemPanel((previous) => !previous);
+                  }}
+                >
+                  <span className="payment-row-left">
+                    <span className="payment-row-icon redeem">#</span>
+                    <span className="payment-row-text">Redeem code</span>
+                  </span>
+                  <span className="payment-row-chevron" aria-hidden="true">{showRedeemPanel ? '^' : '>'}</span>
+                </button>
+
+                {showRedeemPanel ? (
+                  <div className="payment-redeem-box" role="group" aria-label="Redeem code panel">
+                    <label htmlFor="redeem-email">Email</label>
+                    <input
+                      id="redeem-email"
+                      type="email"
+                      value={loggedInEmail}
+                      readOnly
+                      placeholder="you@example.com"
+                    />
+
+                    <label htmlFor="redeem-code">Enter code</label>
+                    <input
+                      id="redeem-code"
+                      type="text"
+                      value={redeemCode}
+                      onChange={(event) => setRedeemCode(event.target.value)}
+                      placeholder="Gift card or promo code"
+                    />
+
+                    <button
+                      className="payment-scan-gift"
+                      type="button"
+                      onClick={() => giftCardInputRef.current?.click()}
+                    >
+                      Scan gift card
+                    </button>
+                    <input
+                      ref={giftCardInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="payment-hidden-file-input"
+                      onChange={(event) => {
+                        const selectedFile = event.target.files?.[0];
+                        setGiftCardFileName(selectedFile ? selectedFile.name : '');
+                      }}
+                    />
+
+                    {giftCardFileName ? (
+                      <p className="payment-selected-file">Selected image: {giftCardFileName}</p>
+                    ) : null}
+
+                    <p className="payment-redeem-note">
+                      By tapping <strong>Redeem</strong>, you agree to the gift card &amp; promotional Code <span className="payment-terms-link">Terms and Condition</span>, as applicable.
+                    </p>
+                  </div>
+                ) : null}
+              </section>
+
+              <div className="payment-mobile-divider" />
+
+              <section className="payment-mobile-section">
+                <div className="payment-mobile-row disabled" aria-disabled="true">
+                  <span className="payment-row-left">
+                    <span className="payment-row-icon muted">👥</span>
+                    <span>
+                      <span className="payment-row-text">Ask someone else to pay</span>
+                      <span className="payment-row-sub">Unavailable for subscriptions</span>
+                    </span>
+                  </span>
+                </div>
+              </section>
+
+              {paymentMethod ? (
+                <section className="payment-mobile-section payment-price-section">
+                  <div className="payment-price-card">
+                    <p className="payment-price-label">Selected payment method: {paymentMethod === 'upi' ? 'UPI' : paymentMethod === 'card' ? 'Card' : paymentMethod === 'netbanking' ? 'Net Banking' : 'Wallet'}</p>
+                    <button className="btn primary payment-price-pay-btn" type="button" onClick={handlePaymentSuccess}>
+                      Pay {planDetails[selectedPlan].price}
+                    </button>
+                  </div>
+                </section>
+              ) : null}
+            </div>
+          )}
         </div>
       ) : null}
 

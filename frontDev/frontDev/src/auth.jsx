@@ -170,7 +170,7 @@ export function loginUser(username, password) {
     return { ok: false, message: 'Wrong password.' };
   }
 
-  return { ok: true, username: foundUser.username };
+  return { ok: true, username: foundUser.username, email: foundUser.email };
 }
 
 function emptySignUpForm() {
@@ -276,7 +276,7 @@ export default function AuthPanel({ initialMode, onClose, onLoginSuccess, onSign
     }
 
     setMessage('');
-    onLoginSuccess(result.username);
+    onLoginSuccess(result.username, result.email);
     onClose();
   };
 
