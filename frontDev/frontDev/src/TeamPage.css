@@ -83,6 +83,11 @@
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+:root.dark-mode .tone-control select option {
+  background: rgba(20, 20, 20, 0.9);
+  color: #f5f5f5;
+}
+
 @media (max-width: 680px) {
   .detect-tone-row {
     flex-direction: column;

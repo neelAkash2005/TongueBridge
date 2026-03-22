@@ -1274,6 +1274,11 @@ main {
   color: var(--ink);
 }
 
+:root.dark-mode .auth-field select option {
+  background: rgba(20, 20, 20, 0.9);
+  color: #f5f5f5;
+}
+
 :root.dark-mode .auth-field input:hover,
 :root.dark-mode .auth-field select:hover {
   border-color: rgba(255, 255, 255, 0.24);
@@ -1342,6 +1347,12 @@ main {
   background: rgba(20, 20, 20, 0.6);
   border-color: rgba(255, 255, 255, 0.15);
   color: var(--ink);
+}
+
+:root.dark-mode .field select option,
+:root.dark-mode .field-no-label select option {
+  background: rgba(20, 20, 20, 0.9);
+  color: #f5f5f5;
 }
 
 :root.dark-mode .field select:hover,
