@@ -1,5 +1,6 @@
 .free-tools-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.65rem;
   margin-top: -0.35rem;
   margin-bottom: 0.85rem;

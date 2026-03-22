@@ -32,3 +32,14 @@
 .premium-tools-card textarea {
   margin-bottom: 0.85rem;
 }
+
+.detected-language-line {
+  margin: -0.1rem 0 1.5rem;
+  font-size: 0.84rem;
+  opacity: 0.8;
+}
+
+.detected-language-line span {
+  font-weight: 600;
+  opacity: 1;
+}

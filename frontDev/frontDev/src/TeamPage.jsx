@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
+import { detectLanguage } from './languageDetect.js';
 import './TeamPage.css';
 
 function TeamPage() {
@@ -9,6 +10,7 @@ function TeamPage() {
   const [outputText, setOutputText] = useState('');
   const [showOutput, setShowOutput] = useState(false);
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
+  const detectedLanguage = detectLanguage(inputText);
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -81,7 +83,11 @@ function TeamPage() {
             onChange={(event) => setInputText(event.target.value)}
           />
 
-          <FreePlanTools resetTrigger={freeToolsResetTrigger} />
+          <p className="detected-language-line">
+            Detect language: <span>{inputText.trim() ? `${detectedLanguage} - detected` : detectedLanguage}</span>
+          </p>
+
+          <FreePlanTools resetTrigger={freeToolsResetTrigger} showAdvanced />
 
           {showOutput ? (
             <textarea
