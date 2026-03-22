@@ -7,7 +7,7 @@ import Dev3 from './assets/Dev3.jpeg';
 import Dev4 from './assets/Dev4.jpeg';
 import Dev5 from './assets/Dev5.jpeg';
 import Dev6 from './assets/Dev6.jpg';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import PremiumPage from './PremiumPage.jsx';
 import TeamPage from './TeamPage.jsx';
@@ -151,6 +151,8 @@ function App() {
   const [isLearnMoreOpen, setIsLearnMoreOpen] = useState(false);
   const [activeLegalModal, setActiveLegalModal] = useState(null);
   const [pendingPlanPage, setPendingPlanPage] = useState(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const swapLanguages = () => {
     const temp = fromLang;
@@ -267,6 +269,11 @@ const closeLearnMore = () => {
     setLoggedInUsername('');
     setActivePage('home');
     setPendingPlanPage(null);
+    setIsUserMenuOpen(false);
+  };
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen((previous) => !previous);
   };
 
   const [contactSubject, setContactSubject] = useState('');
@@ -321,6 +328,17 @@ const closeLearnMore = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
   return (
@@ -462,12 +480,69 @@ const closeLearnMore = () => {
 
           <div className="header-actions">
             {loggedInUsername ? (
-              <>
-                <span className="auth-user">{loggedInUsername}</span>
-                <button className="btn ghost" onClick={handleSignOut} type="button">
-                  Sign Out
+              <div className="user-menu-wrapper" ref={userMenuRef}>
+                <button
+                  className="auth-user-trigger"
+                  onClick={toggleUserMenu}
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={isUserMenuOpen}
+                >
+                  <span className="user-symbol">👤</span>
+                  <span className="auth-user">{loggedInUsername}</span>
+                  <span className="user-caret">▾</span>
                 </button>
-              </>
+
+                {isUserMenuOpen ? (
+                  <div className="user-dropdown" role="menu">
+                    <button
+                      className="user-dropdown-item"
+                      type="button"
+                      onClick={() => {
+                        setActivePage('home');
+                        setIsUserMenuOpen(false);
+                      }}
+                    >
+                      Home
+                    </button>
+                    <button
+                      className="user-dropdown-item"
+                      type="button"
+                      onClick={() => {
+                        setActivePage('home');
+                        goToPricing();
+                        setIsUserMenuOpen(false);
+                      }}
+                    >
+                      Billing & Plans
+                    </button>
+                    <button
+                      className="user-dropdown-item"
+                      type="button"
+                      onClick={() => {
+                        openLearnMore();
+                        setIsUserMenuOpen(false);
+                      }}
+                    >
+                      Help Center
+                    </button>
+                    <button
+                      className="user-dropdown-item"
+                      type="button"
+                      onClick={() => {
+                        setActivePage('home');
+                        goToContactSection();
+                        setIsUserMenuOpen(false);
+                      }}
+                    >
+                      Contact Support
+                    </button>
+                    <button className="user-dropdown-item signout" onClick={handleSignOut} type="button">
+                      Sign Out
+                    </button>
+                  </div>
+                ) : null}
+              </div>
             ) : (
               <>
                 <button className="btn ghost" onClick={openLogin} type="button">

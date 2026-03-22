@@ -512,6 +512,81 @@
   flex-wrap: wrap;
 }
 
+.user-menu-wrapper {
+  position: relative;
+}
+
+.auth-user-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(15, 18, 33, 0.15);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  padding: 0.48rem 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--ink);
+}
+
+.auth-user-trigger:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(15, 18, 33, 0.25);
+}
+
+.user-symbol {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.auth-user {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.user-caret {
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  min-width: 170px;
+  background: #fffaf4;
+  border: 1px solid rgba(15, 18, 33, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.14);
+  padding: 0.4rem;
+  z-index: 1200;
+}
+
+.user-dropdown-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.55rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+
+.user-dropdown-item:hover {
+  background: rgba(15, 18, 33, 0.07);
+}
+
+.user-dropdown-item.signout {
+  color: #b23434;
+}
+
+.user-dropdown-item.signout:hover {
+  background: rgba(178, 52, 52, 0.12);
+}
+
 .auth-note {
   margin: 0.25rem 0 0;
   font-size: 0.84rem;
@@ -1436,6 +1511,37 @@ main {
 
 :root.dark-mode .auth-user {
   color: var(--ink);
+}
+
+:root.dark-mode .auth-user-trigger {
+  background: rgba(26, 26, 26, 0.82);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+:root.dark-mode .auth-user-trigger:hover {
+  background: rgba(34, 34, 34, 0.95);
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+:root.dark-mode .user-dropdown {
+  background: rgba(26, 26, 26, 0.98);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+:root.dark-mode .user-dropdown-item {
+  color: #f5f5f5;
+}
+
+:root.dark-mode .user-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:root.dark-mode .user-dropdown-item.signout {
+  color: #ff9a9a;
+}
+
+:root.dark-mode .user-dropdown-item.signout:hover {
+  background: rgba(255, 90, 90, 0.16);
 }
 
 :root.dark-mode .auth-panel {
