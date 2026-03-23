@@ -152,6 +152,8 @@ function App() {
 
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [showOutput, setShowOutput] = useState(false);
   const [homeHistory, setHomeHistory] = useState([]);
   const [showHomeHistorySidebar, setShowHomeHistorySidebar] = useState(false);
@@ -228,32 +230,61 @@ function App() {
     setIsDarkMode(!isDarkMode);
   };
 
-  const handleTranslate = () => {
+  const handleTranslate = async () => {
     if (inputText.trim() === '') return;
-    const result = inputText;
-    setOutputText(result); 
-    setShowOutput(true); 
+    setLoading(true);
+    setError('');
 
-    setHomeHistory((previousHistory) => [
-      {
-        id: Date.now(),
-        input: inputText,
-        output: result,
-        fromLang,
-        toLang,
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
+    try {
+      const response = await fetch('http://localhost:8000/translate/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: inputText,
+          source_language: fromLang,
+          target_language: toLang,
         }),
-      },
-      ...previousHistory.slice(0, 49),
-    ]);
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to translate text.');
+      }
+
+      const data = await response.json();
+      const result = data.translated_text || '';
+
+      setOutputText(result);
+      setShowOutput(true);
+
+      setHomeHistory((previousHistory) => [
+        {
+          id: Date.now(),
+          input: inputText,
+          output: result,
+          fromLang,
+          toLang,
+          timestamp: new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+        },
+        ...previousHistory.slice(0, 49),
+      ]);
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.');
+      setShowOutput(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClear = () => {
     setInputText('');
     setOutputText('');
+    setError('');
     setShowOutput(false);
     setFreeToolsResetTrigger((previous) => previous + 1);
   };
@@ -1400,6 +1431,8 @@ const closeLearnMore = () => {
 
                 <FreePlanTools resetTrigger={freeToolsResetTrigger} />
 
+                {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
+
                 {showOutput && (
                   <textarea
                     rows="5"
@@ -1411,7 +1444,9 @@ const closeLearnMore = () => {
                 )}
 
                 <div className="card-actions">
-                  <button className="btn primary" onClick={handleTranslate}>Translate</button>
+                  <button className="btn primary" onClick={handleTranslate} disabled={loading}>
+                    {loading ? 'Translating...' : 'Translate'}
+                  </button>
                   <button
                     className="home-history-toggle-btn"
                     onClick={() => setShowHomeHistorySidebar(!showHomeHistorySidebar)}
