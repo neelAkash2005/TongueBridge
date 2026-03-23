@@ -10,6 +10,7 @@ function TeamPage() {
   const [outputText, setOutputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isOutputMicListening, setIsOutputMicListening] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [toneMode, setToneMode] = useState('neutral');
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
@@ -89,8 +90,11 @@ function TeamPage() {
         ...prevHistory.slice(0, 49),
       ]);
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
-      setShowOutput(false);
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      setError(err.message === 'Failed to fetch' ? fallbackMessage : (err.message || fallbackMessage));
+      setOutputText('');
+      setShowOutput(true);
     } finally {
       setLoading(false);
     }
@@ -100,6 +104,7 @@ function TeamPage() {
     setInputText('');
     setOutputText('');
     setError('');
+    setIsOutputMicListening(false);
     setShowOutput(false);
     setFreeToolsResetTrigger((previous) => previous + 1);
   };
@@ -257,13 +262,30 @@ function TeamPage() {
           {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
 
           {showOutput ? (
-            <textarea
-              rows="5"
-              value={outputText}
-              readOnly
-              className="output-box"
-              style={{ marginTop: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-            />
+            <>
+              <textarea
+                rows="5"
+                value={outputText}
+                readOnly
+                className="output-box"
+                style={{ marginTop: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+              />
+              <div className="free-tools-row" style={{ marginTop: '0.75rem' }}>
+                <button
+                  className={`tool-btn ${isOutputMicListening ? 'active' : ''}`}
+                  type="button"
+                  onClick={() => setIsOutputMicListening((prev) => !prev)}
+                  aria-pressed={isOutputMicListening}
+                  title="Mic"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 14C13.66 14 15 12.66 15 11V5C15 3.34 13.66 2 12 2C10.34 2 9 3.34 9 5V11C9 12.66 10.34 14 12 14Z" fill="currentColor"/>
+                    <path d="M19 11C19 14.53 16.39 17.43 13 17.93V21H11V17.93C7.61 17.43 5 14.53 5 11H7C7 13.76 9.24 16 12 16C14.76 16 17 13.76 17 11H19Z" fill="currentColor"/>
+                  </svg>
+                  Mic
+                </button>
+              </div>
+            </>
           ) : null}
 
           <div className="card-actions">
