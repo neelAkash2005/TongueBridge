@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import PremiumPage from './PremiumPage.jsx';
 import TeamPage from './TeamPage.jsx';
+import { SOURCE_LANGUAGES, getTargetLanguages } from './supportedLanguagePairs.js';
 
 // --- NEW: Team Data Array for 6 Developers ---
 const teamMembers = [
@@ -221,10 +222,25 @@ function App() {
     },
   };
 
+  const targetLanguageOptions = getTargetLanguages(fromLang);
+
+  useEffect(() => {
+    if (!targetLanguageOptions.includes(toLang)) {
+      setToLang(targetLanguageOptions[0] || '');
+    }
+  }, [fromLang, toLang, targetLanguageOptions]);
+
   const swapLanguages = () => {
-    const temp = fromLang;
-    setFromLang(toLang);
-    setToLang(temp);
+    const nextFrom = toLang;
+    const nextTo = fromLang;
+    const nextTargets = getTargetLanguages(nextFrom);
+
+    setFromLang(nextFrom);
+    if (nextTargets.includes(nextTo)) {
+      setToLang(nextTo);
+    } else {
+      setToLang(nextTargets[0] || '');
+    }
   };
 
   const toggleDarkMode = () => {
@@ -250,7 +266,16 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to translate text.');
+        let errorMessage = 'Failed to translate text.';
+        try {
+          const errorData = await response.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -1402,10 +1427,9 @@ const closeLearnMore = () => {
                       onChange={(e) => setFromLang(e.target.value)}
                       aria-label="Source language"
                     >
-                      <option>English</option>
-                      <option>Hindi</option>
-                      <option>Spanish</option>
-                      <option>French</option>
+                      {SOURCE_LANGUAGES.map((language) => (
+                        <option key={language} value={language}>{language}</option>
+                      ))}
                     </select>
                   </div>
                   <button className="swap-btn" onClick={swapLanguages} type="button" title="Swap languages">
@@ -1419,10 +1443,9 @@ const closeLearnMore = () => {
                       onChange={(e) => setToLang(e.target.value)}
                       aria-label="Target language"
                     >
-                      <option>Spanish</option>
-                      <option>English</option>
-                      <option>French</option>
-                      <option>Hindi</option>
+                      {targetLanguageOptions.map((language) => (
+                        <option key={language} value={language}>{language}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
