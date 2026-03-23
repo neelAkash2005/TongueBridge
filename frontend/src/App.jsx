@@ -243,6 +243,25 @@ function App() {
     }
   };
 
+  const handleOutputMicToggle = () => {
+    if (!outputText.trim() || !window.speechSynthesis) return;
+
+    if (isOutputMicListening) {
+      window.speechSynthesis.cancel();
+      setIsOutputMicListening(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(outputText);
+    utterance.lang = 'en-US';
+    utterance.onend = () => setIsOutputMicListening(false);
+    utterance.onerror = () => setIsOutputMicListening(false);
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setIsOutputMicListening(true);
+  };
+
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
@@ -314,6 +333,9 @@ function App() {
     setInputText('');
     setOutputText('');
     setError('');
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
     setIsOutputMicListening(false);
     setShowOutput(false);
     setFreeToolsResetTrigger((previous) => previous + 1);
@@ -1457,7 +1479,13 @@ const closeLearnMore = () => {
                   onChange={(e) => setInputText(e.target.value)}
                 />
 
-                <FreePlanTools resetTrigger={freeToolsResetTrigger} />
+                <FreePlanTools
+                  resetTrigger={freeToolsResetTrigger}
+                  onSpeechToText={(transcript) => {
+                    setInputText((previous) => (previous ? `${previous} ${transcript}` : transcript));
+                    setError('');
+                  }}
+                />
 
                 {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
 
@@ -1474,7 +1502,7 @@ const closeLearnMore = () => {
                       <button
                         className={`tool-btn ${isOutputMicListening ? 'active' : ''}`}
                         type="button"
-                        onClick={() => setIsOutputMicListening((prev) => !prev)}
+                        onClick={handleOutputMicToggle}
                         aria-pressed={isOutputMicListening}
                         title="Mic"
                       >

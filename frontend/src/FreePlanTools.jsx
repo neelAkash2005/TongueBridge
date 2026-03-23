@@ -1,19 +1,74 @@
 import { useEffect, useRef, useState } from 'react';
 import './FreePlanTools.css';
 
-function FreePlanTools({ resetTrigger, showAdvanced = false }) {
+function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText }) {
   const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError] = useState('');
   const [uploadedImageName, setUploadedImageName] = useState('');
   const [uploadedDocumentName, setUploadedDocumentName] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const imageInputRef = useRef(null);
   const documentInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const onSpeechToTextRef = useRef(onSpeechToText);
+
+  useEffect(() => {
+    onSpeechToTextRef.current = onSpeechToText;
+  }, [onSpeechToText]);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setMicError('');
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error === 'not-allowed') {
+        setMicError('Microphone permission denied. Please allow microphone access.');
+      } else {
+        setMicError('Could not capture voice. Please try again.');
+      }
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+      if (transcript && onSpeechToTextRef.current) {
+        onSpeechToTextRef.current(transcript);
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     setIsListening(false);
+    setMicError('');
     setUploadedImageName('');
     setUploadedDocumentName('');
     setWebsiteUrl('');
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
     if (imageInputRef.current) {
       imageInputRef.current.value = '';
     }
@@ -23,7 +78,23 @@ function FreePlanTools({ resetTrigger, showAdvanced = false }) {
   }, [resetTrigger]);
 
   const toggleMic = () => {
-    setIsListening((prev) => !prev);
+    if (!recognitionRef.current) {
+      setMicError('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    setMicError('');
+    try {
+      recognitionRef.current.start();
+    } catch {
+      setIsListening(false);
+      setMicError('Could not start microphone. Please try again.');
+    }
   };
 
   const handleImageSelect = (event) => {
@@ -123,6 +194,7 @@ function FreePlanTools({ resetTrigger, showAdvanced = false }) {
           {showAdvanced ? '🎙️ Mic activated' : '🎙️ Mic active (limited access)'}
         </p>
       ) : null}
+      {micError ? <p className="free-tool-note">⚠️ {micError}</p> : null}
       {uploadedImageName ? <p className="free-tool-note">🖼️ Selected image: {uploadedImageName}</p> : null}
       {showAdvanced && uploadedDocumentName ? <p className="free-tool-note">📄 Selected document: {uploadedDocumentName}</p> : null}
       {showAdvanced && websiteUrl ? <p className="free-tool-note">🌐 Website: {websiteUrl}</p> : null}
