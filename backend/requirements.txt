@@ -5,3 +5,6 @@ torch
 sentencepiece
 SpeechRecognition
 python-multipart
+Pillow
+pytesseract
+gTTS

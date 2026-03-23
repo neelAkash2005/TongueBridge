@@ -9,6 +9,7 @@ function TeamPage() {
   const [toLang, setToLang] = useState('Spanish');
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOutputMicListening, setIsOutputMicListening] = useState(false);
@@ -81,6 +82,11 @@ function TeamPage() {
   };
 
   const handleTranslate = async () => {
+    if (selectedImageFile) {
+      await handleImageTranslate(selectedImageFile);
+      return;
+    }
+
     if (inputText.trim() === '') return;
     setLoading(true);
     setError('');
@@ -144,9 +150,106 @@ function TeamPage() {
     }
   };
 
+  const handleImageTranslate = async (imageFile) => {
+    setLoading(true);
+    setError('');
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('source_language', fromLang);
+
+      const extractionResponse = await fetch('http://localhost:8000/translate/image/extract', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!extractionResponse.ok) {
+        let errorMessage = 'Image text extraction failed.';
+        try {
+          const errorData = await extractionResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const extractionData = await extractionResponse.json();
+      const extractedText = extractionData.extracted_text || '';
+
+      setInputText(extractedText);
+
+      const translationResponse = await fetch('http://localhost:8000/translate/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: extractedText,
+          source_language: fromLang,
+          target_language: toLang,
+        }),
+      });
+
+      if (!translationResponse.ok) {
+        let errorMessage = 'Text translation failed.';
+        try {
+          const errorData = await translationResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const translationData = await translationResponse.json();
+      const translatedText = translationData.translated_text || '';
+
+      setOutputText(translatedText);
+      setShowOutput(true);
+
+      setHistory((prevHistory) => [
+        {
+          id: Date.now(),
+          input: extractedText,
+          output: translatedText,
+          fromLang,
+          toLang,
+          tone: toneMode,
+          timestamp: new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+        },
+        ...prevHistory.slice(0, 49),
+      ]);
+    } catch (err) {
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+      setError(message);
+      setShowOutput(true);
+      throw new Error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleClear = () => {
     setInputText('');
     setOutputText('');
+    setSelectedImageFile(null);
     setError('');
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -307,6 +410,10 @@ function TeamPage() {
             showAdvanced
             onSpeechToText={(transcript) => {
               setInputText((previous) => (previous ? `${previous} ${transcript}` : transcript));
+              setError('');
+            }}
+            onImageSelect={(file) => {
+              setSelectedImageFile(file);
               setError('');
             }}
           />

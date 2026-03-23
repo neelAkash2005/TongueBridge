@@ -73,3 +73,11 @@ def translate_text_service(
     translated_text = tokenizer.decode(generated_tokens[0], skip_special_tokens=True)
 
     return translated_text
+
+
+def translate_text(text: str, source_language: str, target_language: str) -> str:
+    return translate_text_service(
+        text=text,
+        source_language=source_language,
+        target_language=target_language,
+    )

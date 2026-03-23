@@ -1,20 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import './FreePlanTools.css';
 
-function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText }) {
+function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onImageSelect }) {
   const [isListening, setIsListening] = useState(false);
   const [micError, setMicError] = useState('');
+  const [imageError, setImageError] = useState('');
   const [uploadedImageName, setUploadedImageName] = useState('');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+  const [isImagePreviewVisible, setIsImagePreviewVisible] = useState(false);
   const [uploadedDocumentName, setUploadedDocumentName] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const imageInputRef = useRef(null);
   const documentInputRef = useRef(null);
   const recognitionRef = useRef(null);
   const onSpeechToTextRef = useRef(onSpeechToText);
+  const onImageSelectRef = useRef(onImageSelect);
 
   useEffect(() => {
     onSpeechToTextRef.current = onSpeechToText;
   }, [onSpeechToText]);
+
+  useEffect(() => {
+    onImageSelectRef.current = onImageSelect;
+  }, [onImageSelect]);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -63,7 +71,15 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText }) {
   useEffect(() => {
     setIsListening(false);
     setMicError('');
+    setImageError('');
     setUploadedImageName('');
+    setIsImagePreviewVisible(false);
+    setImagePreviewUrl((previousUrl) => {
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      return '';
+    });
     setUploadedDocumentName('');
     setWebsiteUrl('');
     if (recognitionRef.current) {
@@ -76,6 +92,12 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText }) {
       documentInputRef.current.value = '';
     }
   }, [resetTrigger]);
+
+  useEffect(() => () => {
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+  }, [imagePreviewUrl]);
 
   const toggleMic = () => {
     if (!recognitionRef.current) {
@@ -97,10 +119,32 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText }) {
     }
   };
 
-  const handleImageSelect = (event) => {
+  const handleImageSelect = async (event) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
+
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+
+    const previewUrl = URL.createObjectURL(selectedFile);
+    setImagePreviewUrl(previewUrl);
     setUploadedImageName(selectedFile.name);
+    setIsImagePreviewVisible(false);
+
+    await new Promise((resolve) => {
+      window.requestAnimationFrame(() => resolve());
+    });
+
+    setImageError('');
+
+    if (onImageSelectRef.current) {
+      try {
+        onImageSelectRef.current(selectedFile);
+      } catch (error) {
+        setImageError(error?.message || 'Image selection failed. Please try again.');
+      }
+    }
   };
 
   const handleDocumentSelect = (event) => {
@@ -195,7 +239,22 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText }) {
         </p>
       ) : null}
       {micError ? <p className="free-tool-note">⚠️ {micError}</p> : null}
-      {uploadedImageName ? <p className="free-tool-note">🖼️ Selected image: {uploadedImageName}</p> : null}
+      {imageError ? <p className="free-tool-note">⚠️ {imageError}</p> : null}
+      {uploadedImageName ? (
+        <button
+          type="button"
+          className="image-name-trigger"
+          onClick={() => setIsImagePreviewVisible((previous) => !previous)}
+          title="Click to view selected image"
+        >
+          🖼️ Selected image: {uploadedImageName}
+        </button>
+      ) : null}
+      {imagePreviewUrl && isImagePreviewVisible ? (
+        <div className="image-preview-wrap">
+          <img src={imagePreviewUrl} alt="Selected upload" className="image-preview" />
+        </div>
+      ) : null}
       {showAdvanced && uploadedDocumentName ? <p className="free-tool-note">📄 Selected document: {uploadedDocumentName}</p> : null}
       {showAdvanced && websiteUrl ? <p className="free-tool-note">🌐 Website: {websiteUrl}</p> : null}
     </>

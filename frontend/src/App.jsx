@@ -153,6 +153,7 @@ function App() {
 
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOutputMicListening, setIsOutputMicListening] = useState(false);
@@ -160,6 +161,7 @@ function App() {
   const [homeHistory, setHomeHistory] = useState([]);
   const [showHomeHistorySidebar, setShowHomeHistorySidebar] = useState(false);
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
+  const abortControllerRef = useRef(null);
   const [loggedInUsername, setLoggedInUsername] = useState('');
   const [loggedInEmail, setLoggedInEmail] = useState('');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -267,9 +269,16 @@ function App() {
   };
 
   const handleTranslate = async () => {
+    if (selectedImageFile) {
+      await handleImageTranslate(selectedImageFile);
+      return;
+    }
+
     if (inputText.trim() === '') return;
     setLoading(true);
     setError('');
+
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch('http://localhost:8000/translate/text', {
@@ -277,6 +286,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: abortControllerRef.current.signal,
         body: JSON.stringify({
           text: inputText,
           source_language: fromLang,
@@ -319,19 +329,128 @@ function App() {
         ...previousHistory.slice(0, 49),
       ]);
     } catch (err) {
-      const fallbackMessage =
-        'Could not connect to backend. Please start backend server at http://localhost:8000.';
-      setError(err.message === 'Failed to fetch' ? fallbackMessage : (err.message || fallbackMessage));
-      setOutputText('');
+      // Don't show output if request was aborted (user clicked Clear)
+      if (err.name !== 'AbortError') {
+        const fallbackMessage =
+          'Could not connect to backend. Please start backend server at http://localhost:8000.';
+        setError(err.message === 'Failed to fetch' ? fallbackMessage : (err.message || fallbackMessage));
+        setOutputText('');
+        setShowOutput(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageTranslate = async (imageFile) => {
+    setLoading(true);
+    setError('');
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
+
+    abortControllerRef.current = new AbortController();
+
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('source_language', fromLang);
+
+      const extractionResponse = await fetch('http://localhost:8000/translate/image/extract', {
+        method: 'POST',
+        body: formData,
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!extractionResponse.ok) {
+        let errorMessage = 'Image text extraction failed.';
+        try {
+          const errorData = await extractionResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const extractionData = await extractionResponse.json();
+      const extractedText = extractionData.extracted_text || '';
+
+      setInputText(extractedText);
+
+      const translationResponse = await fetch('http://localhost:8000/translate/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: extractedText,
+          source_language: fromLang,
+          target_language: toLang,
+        }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!translationResponse.ok) {
+        let errorMessage = 'Text translation failed.';
+        try {
+          const errorData = await translationResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const translationData = await translationResponse.json();
+      const translatedText = translationData.translated_text || '';
+
+      setOutputText(translatedText);
       setShowOutput(true);
+
+      setHomeHistory((previousHistory) => [
+        {
+          id: Date.now(),
+          input: extractedText,
+          output: translatedText,
+          fromLang,
+          toLang,
+          timestamp: new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+        },
+        ...previousHistory.slice(0, 49),
+      ]);
+    } catch (err) {
+      // Don't show output if request was aborted (user clicked Clear)
+      if (err.name !== 'AbortError') {
+        const fallbackMessage =
+          'Could not connect to backend. Please start backend server at http://localhost:8000.';
+        const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+        setError(message);
+        setShowOutput(true);
+        throw new Error(message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleClear = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     setInputText('');
     setOutputText('');
+    setSelectedImageFile(null);
     setError('');
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -1483,6 +1602,10 @@ const closeLearnMore = () => {
                   resetTrigger={freeToolsResetTrigger}
                   onSpeechToText={(transcript) => {
                     setInputText((previous) => (previous ? `${previous} ${transcript}` : transcript));
+                    setError('');
+                  }}
+                  onImageSelect={(file) => {
+                    setSelectedImageFile(file);
                     setError('');
                   }}
                 />
