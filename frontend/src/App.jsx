@@ -142,6 +142,14 @@ function App() {
     });
   };
 
+  const goToHomeTop = () => {
+    setActivePage('home');
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
   const [showOutput, setShowOutput] = useState(false);
@@ -488,7 +496,7 @@ const closeLearnMore = () => {
 
           <button className="brand brand-button"
             type="button"
-            onClick={() => setActivePage('home')} 
+            onClick={goToHomeTop}
             aria-label="Go to home"
           >
             <div className="brand-mark">
@@ -1148,7 +1156,7 @@ const closeLearnMore = () => {
       🟢 Free (₹0)
     <ul>
       <li> 1 user </li>
-      <li> 5–6 searches daily </li>
+      <li> Unlimited text translations </li>
       <li> Basic audio translation (limited) </li>
       <li> Limited image-to-text translation (up to 9 images) </li>
     </ul>
@@ -1454,9 +1462,9 @@ const closeLearnMore = () => {
               <div className="plan-note">
                 <p className="plan-lead">✦ Perfect to get started:</p> <br />
                 <ul className="plan-list">
-                  <li><span className="plan-icon">◈</span> 5-6 translations per day</li>
-                  <li><span className="plan-icon">✎</span> Text translation (limited)</li>
-                  <li><span className="plan-icon">♫</span> Audio translation (limited)</li>
+                  <li><span className="plan-icon">◈</span> Basic translations per day</li>
+                  <li><span className="plan-icon">✎</span> Unlimited text translation</li>
+                  <li><span className="plan-icon">♫</span> Audio translation (limited - up to 10 translations)</li>
                   <li><span className="plan-icon">◉</span> Image-to-text translation (limited - up to 9 images)</li>
                 </ul>
               </div>
