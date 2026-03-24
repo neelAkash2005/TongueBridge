@@ -15,6 +15,12 @@ import FreePlanTools from './FreePlanTools.jsx';
 import PremiumPage from './PremiumPage.jsx';
 import TeamPage from './TeamPage.jsx';
 import { SOURCE_LANGUAGES, getTargetLanguages } from './supportedLanguagePairs.js';
+import {
+  FREE_IMAGE_DAILY_LIMIT,
+  formatTimeUntilReset,
+  getDailyUsageStatus,
+  incrementDailyUsage,
+} from './limits/freePlanUsage.js';
 
 // --- NEW: Team Data Array for 6 Developers ---
 const teamMembers = [
@@ -154,6 +160,9 @@ function App() {
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [freeUsageStatus, setFreeUsageStatus] = useState({
+    imageRemaining: FREE_IMAGE_DAILY_LIMIT,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOutputMicListening, setIsOutputMicListening] = useState(false);
@@ -268,13 +277,43 @@ function App() {
     setIsDarkMode(!isDarkMode);
   };
 
+  const refreshFreeUsageStatus = () => {
+    const imageStatus = getDailyUsageStatus('image', FREE_IMAGE_DAILY_LIMIT);
+
+    setFreeUsageStatus({
+      imageRemaining: imageStatus.remaining,
+    });
+
+    return { imageStatus };
+  };
+
+  useEffect(() => {
+    refreshFreeUsageStatus();
+  }, []);
+
   const handleTranslate = async () => {
+    const { imageStatus } = refreshFreeUsageStatus();
+
     if (selectedImageFile) {
-      await handleImageTranslate(selectedImageFile);
+      if (!imageStatus.allowed) {
+        const resetIn = formatTimeUntilReset(imageStatus.resetAtMs);
+        setError(`Free plan image-to-text limit reached (${FREE_IMAGE_DAILY_LIMIT}/${FREE_IMAGE_DAILY_LIMIT}). Try again in ${resetIn}.`);
+        setShowOutput(false);
+        return;
+      }
+
+      try {
+        await handleImageTranslate(selectedImageFile);
+        incrementDailyUsage('image');
+        refreshFreeUsageStatus();
+      } catch {
+        // Error is already handled in handleImageTranslate.
+      }
       return;
     }
 
     if (inputText.trim() === '') return;
+
     setLoading(true);
     setError('');
 
@@ -1359,20 +1398,20 @@ const closeLearnMore = () => {
     <ul>
       <li> 1 user </li>
       <li> Unlimited text translations </li>
-      <li> Basic audio translation (limited) </li>
-      <li> Limited image-to-text translation (up to 9 images) </li>
+      <li> Basic audio translations </li>
+      <li> Limited image-to-text translations (up to 9 images) </li>
     </ul>
     
       🔵 Premium (₹349)
     <ul>
       <li> 1 user </li>
       <li> Unlimited searches</li>
-      <li> Unlimited text and audio translation </li>
-      <li> Language detection + translation </li>
-      <li> Image-to-text translation (unlimited) </li>
-      <li> Document translation  </li>
-      <li> Website translation </li>
-      <li> Tone-Preserving translation </li>
+      <li> Unlimited text and audio translations </li>
+      <li> Language detection + translations </li>
+      <li> Image-to-text translations (unlimited) </li>
+      <li> Document translations  </li>
+      <li> Website translations </li>
+      <li> Tone-Preserving translations </li>
     </ul>
     
       🟣 Team (₹999)
@@ -1602,6 +1641,7 @@ const closeLearnMore = () => {
                   resetTrigger={freeToolsResetTrigger}
                   onSpeechToText={(transcript) => {
                     setInputText((previous) => (previous ? `${previous} ${transcript}` : transcript));
+                    setSelectedImageFile(null);
                     setError('');
                   }}
                   onImageSelect={(file) => {
@@ -1609,6 +1649,10 @@ const closeLearnMore = () => {
                     setError('');
                   }}
                 />
+
+                <p className="free-tool-note">
+                  Free limits today · Image: {freeUsageStatus.imageRemaining}/{FREE_IMAGE_DAILY_LIMIT} left
+                </p>
 
                 {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
 
@@ -1694,9 +1738,9 @@ const closeLearnMore = () => {
                 <p className="plan-lead">✦ Perfect to get started:</p> <br />
                 <ul className="plan-list">
                   <li><span className="plan-icon">◈</span> Basic translations per day</li>
-                  <li><span className="plan-icon">✎</span> Unlimited text translation</li>
-                  <li><span className="plan-icon">♫</span> Audio translation (limited - up to 10 translations)</li>
-                  <li><span className="plan-icon">◉</span> Image-to-text translation (limited - up to 9 images)</li>
+                  <li><span className="plan-icon">✎</span> Unlimited text translations </li>
+                  <li><span className="plan-icon">♫</span> Unlimited basic audio translations </li>
+                  <li><span className="plan-icon">◉</span> Image-to-text translations (limited - up to 9 images) per day</li>
                 </ul>
               </div>
               <button className="btn ghost">Keep free</button>
@@ -1713,12 +1757,12 @@ const closeLearnMore = () => {
               <div className="plan-note">
                 <p className="plan-lead">✦ Everything in Free, plus:</p><br />
                 <ul className="plan-list">
-                  <li><span className="plan-icon">∞</span> Unlimited text & audio translation</li>
-                  <li><span className="plan-icon">◎</span> Language detection with translation</li>
-                  <li><span className="plan-icon">◉</span> Image-to-Text translation (unlimited)</li>
-                  <li><span className="plan-icon">▣</span> Document translation</li>
-                  <li><span className="plan-icon">⌁</span> Website translation</li>
-                  <li><span className="plan-icon">♢</span> Tone-preserving translation</li>
+                  <li><span className="plan-icon">∞</span> Unlimited text & audio translations </li>
+                  <li><span className="plan-icon">◎</span> Language detection with translations </li>
+                  <li><span className="plan-icon">◉</span> Image-to-Text translations (unlimited)</li>
+                  <li><span className="plan-icon">▣</span> Document translations </li>
+                  <li><span className="plan-icon">⌁</span> Website translations </li>
+                  <li><span className="plan-icon">♢</span> Tone-preserving translations </li>
                 </ul>
               </div>
               <button className="btn primary" type="button" onClick={() => handleProtectedPlanOpen('premium')}>Go Premium</button>
@@ -1735,9 +1779,9 @@ const closeLearnMore = () => {
                 <p className="plan-lead">✦ Everything in Premium, plus:</p> <br />
                 <ul className="plan-list">
                   <li><span className="plan-icon">◍</span> Up to 6 users (shared access across devices)</li>
-                  <li><span className="plan-icon">⟡</span> Shared access to features & translations</li>
-                  <li><span className="plan-icon">⚡</span> Faster processing</li>
-                  <li><span className="plan-icon">☍</span> Team history & collaboration support</li>
+                  <li><span className="plan-icon">⟡</span> Shared access to features & translations </li>
+                  <li><span className="plan-icon">⚡</span> Faster processing </li>
+                  <li><span className="plan-icon">☍</span> Team history & collaboration support </li>
                 </ul>
               </div>
               <button className="btn ghost" type="button" onClick={() => handleProtectedPlanOpen('team')}>Go Team</button>
