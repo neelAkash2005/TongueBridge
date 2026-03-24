@@ -8,3 +8,7 @@ python-multipart
 Pillow
 pytesseract
 gTTS
+pypdf
+python-docx
+olefile
+python-pptx

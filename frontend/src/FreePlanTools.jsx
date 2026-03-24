@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import './FreePlanTools.css';
 
-function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onImageSelect }) {
+function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onImageSelect, onDocumentSelect }) {
   const [isListening, setIsListening] = useState(false);
   const [micError, setMicError] = useState('');
   const [imageError, setImageError] = useState('');
@@ -9,12 +9,16 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
   const [imagePreviewUrl, setImagePreviewUrl] = useState('');
   const [isImagePreviewVisible, setIsImagePreviewVisible] = useState(false);
   const [uploadedDocumentName, setUploadedDocumentName] = useState('');
+  const [documentPreviewContent, setDocumentPreviewContent] = useState('');
+  const [documentPreviewUrl, setDocumentPreviewUrl] = useState('');
+  const [isDocumentPreviewVisible, setIsDocumentPreviewVisible] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const imageInputRef = useRef(null);
   const documentInputRef = useRef(null);
   const recognitionRef = useRef(null);
   const onSpeechToTextRef = useRef(onSpeechToText);
   const onImageSelectRef = useRef(onImageSelect);
+  const onDocumentSelectRef = useRef(onDocumentSelect);
 
   useEffect(() => {
     onSpeechToTextRef.current = onSpeechToText;
@@ -23,6 +27,10 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
   useEffect(() => {
     onImageSelectRef.current = onImageSelect;
   }, [onImageSelect]);
+
+  useEffect(() => {
+    onDocumentSelectRef.current = onDocumentSelect;
+  }, [onDocumentSelect]);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -81,6 +89,14 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
       return '';
     });
     setUploadedDocumentName('');
+    setDocumentPreviewContent('');
+    setDocumentPreviewUrl((previousUrl) => {
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      return '';
+    });
+    setIsDocumentPreviewVisible(false);
     setWebsiteUrl('');
     if (recognitionRef.current) {
       recognitionRef.current.stop();
@@ -97,7 +113,10 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
-  }, [imagePreviewUrl]);
+    if (documentPreviewUrl) {
+      URL.revokeObjectURL(documentPreviewUrl);
+    }
+  }, [imagePreviewUrl, documentPreviewUrl]);
 
   const toggleMic = () => {
     if (!recognitionRef.current) {
@@ -151,6 +170,37 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
     setUploadedDocumentName(selectedFile.name);
+    setIsDocumentPreviewVisible(false);
+
+    if (documentPreviewUrl) {
+      URL.revokeObjectURL(documentPreviewUrl);
+    }
+    setDocumentPreviewUrl('');
+
+    const fileExt = selectedFile.name.toLowerCase().split('.').pop();
+    const fileSize = (selectedFile.size / 1024).toFixed(2);
+    
+    if (fileExt === 'txt') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result || '';
+        setDocumentPreviewContent(content.substring(0, 500));
+      };
+      reader.onerror = () => {
+        setDocumentPreviewContent('Could not read file content');
+      };
+      reader.readAsText(selectedFile);
+    } else if (fileExt === 'pdf') {
+      const previewUrl = URL.createObjectURL(selectedFile);
+      setDocumentPreviewUrl(previewUrl);
+      setDocumentPreviewContent(`📄 ${selectedFile.name}\n\nFile size: ${fileSize} KB\n\nFormat: PDF\n\n(PDF preview below)`);
+    } else {
+      setDocumentPreviewContent(`📄 ${selectedFile.name}\n\nFile size: ${fileSize} KB\n\nFormat: ${fileExt.toUpperCase()}\n\nClick "Translate" to process this document.`);
+    }
+
+    if (onDocumentSelectRef.current) {
+      onDocumentSelectRef.current(selectedFile);
+    }
   };
 
   const handleWebsiteInput = () => {
@@ -227,7 +277,7 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
         <input
           ref={documentInputRef}
           type="file"
-          accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx"
+          accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
           onChange={handleDocumentSelect}
           style={{ display: 'none' }}
         />
@@ -255,7 +305,28 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
           <img src={imagePreviewUrl} alt="Selected upload" className="image-preview" />
         </div>
       ) : null}
-      {showAdvanced && uploadedDocumentName ? <p className="free-tool-note">📄 Selected document: {uploadedDocumentName}</p> : null}
+      {showAdvanced && uploadedDocumentName ? (
+        <button
+          type="button"
+          className="image-name-trigger"
+          onClick={() => setIsDocumentPreviewVisible((previous) => !previous)}
+          title="Click to view selected document"
+        >
+          📄 Selected document: {uploadedDocumentName}
+        </button>
+      ) : null}
+      {showAdvanced && documentPreviewContent && isDocumentPreviewVisible ? (
+        <div className="document-preview-wrap">
+          <pre className="document-preview">{documentPreviewContent}</pre>
+          {documentPreviewUrl && (
+            <iframe
+              src={documentPreviewUrl}
+              className="document-pdf-viewer"
+              title="Document preview"
+            />
+          )}
+        </div>
+      ) : null}
       {showAdvanced && websiteUrl ? <p className="free-tool-note">🌐 Website: {websiteUrl}</p> : null}
     </>
   );

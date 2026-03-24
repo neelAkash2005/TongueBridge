@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import { detectLanguage } from './languageDetect.js';
 import { SOURCE_LANGUAGES, getTargetLanguages } from './supportedLanguagePairs.js';
@@ -10,6 +10,9 @@ function PremiumPage() {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedDocumentFile, setSelectedDocumentFile] = useState(null);
+  const [translatedDocumentFilename, setTranslatedDocumentFilename] = useState('');
+  const [translatedDocumentDownloadUrl, setTranslatedDocumentDownloadUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isOutputMicListening, setIsOutputMicListening] = useState(false);
@@ -18,6 +21,9 @@ function PremiumPage() {
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
   const [history, setHistory] = useState([]);
   const [showHistorySidebar, setShowHistorySidebar] = useState(false);
+  const documentAbortControllerRef = useRef(null);
+  const documentTranslateTimeoutRef = useRef(null);
+  const clearTriggeredAbortRef = useRef(false);
   const detectedLanguage = detectLanguage(inputText);
 
   // Load history from localStorage on mount
@@ -84,6 +90,11 @@ function PremiumPage() {
   const handleTranslate = async () => {
     if (selectedImageFile) {
       await handleImageTranslate(selectedImageFile);
+      return;
+    }
+
+    if (selectedDocumentFile) {
+      await handleDocumentTranslate(selectedDocumentFile);
       return;
     }
 
@@ -246,10 +257,129 @@ function PremiumPage() {
     }
   };
 
+  const handleDocumentTranslate = async (documentFile) => {
+    setLoading(true);
+    setError('');
+    clearTriggeredAbortRef.current = false;
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', documentFile);
+      formData.append('source_lang', fromLang);
+      formData.append('target_lang', toLang);
+
+      const controller = new AbortController();
+      documentAbortControllerRef.current = controller;
+      documentTranslateTimeoutRef.current = setTimeout(() => controller.abort(), 180000); // 180 second timeout for full document translation
+
+      try {
+        const response = await fetch('http://localhost:8000/translate/document', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+
+        if (documentTranslateTimeoutRef.current) {
+          clearTimeout(documentTranslateTimeoutRef.current);
+          documentTranslateTimeoutRef.current = null;
+        }
+        documentAbortControllerRef.current = null;
+
+        if (!response.ok) {
+          let errorMessage = 'Document translation failed.';
+          try {
+            const errorData = await response.json();
+            if (errorData?.detail) {
+              errorMessage = errorData.detail;
+            }
+          } catch {
+            // Keep default message if response body is not JSON
+          }
+          throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        const extractedText = data.extracted_text || '';
+        const translatedText = data.translated_text || '';
+        const filename = data.filename || '';
+        const downloadUrl = data.download_url ? `http://localhost:8000${data.download_url}` : '';
+
+        // Set extracted text in input box and translated text in output box
+        setInputText(extractedText);
+        setOutputText(translatedText);
+        setTranslatedDocumentFilename(filename);
+        setTranslatedDocumentDownloadUrl(downloadUrl);
+        setShowOutput(true);
+
+        // Add to history using the extracted and translated text
+        setHistory((prevHistory) => [
+          {
+            id: Date.now(),
+            input: extractedText,
+            output: translatedText,
+            fromLang,
+            toLang,
+            tone: toneMode,
+            timestamp: new Date().toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            }),
+          },
+          ...prevHistory.slice(0, 49),
+        ]);
+      } catch (fetchErr) {
+        if (documentTranslateTimeoutRef.current) {
+          clearTimeout(documentTranslateTimeoutRef.current);
+          documentTranslateTimeoutRef.current = null;
+        }
+        documentAbortControllerRef.current = null;
+
+        if (fetchErr.name === 'AbortError') {
+          if (clearTriggeredAbortRef.current) {
+            return;
+          }
+          throw new Error('Document translation is taking longer than expected. This may indicate a backend issue or very large document. Please check your backend server.');
+        }
+        throw fetchErr;
+      }
+    } catch (err) {
+      if (clearTriggeredAbortRef.current) {
+        return;
+      }
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+      setError(message);
+      setShowOutput(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleClear = () => {
+    clearTriggeredAbortRef.current = true;
+    if (documentTranslateTimeoutRef.current) {
+      clearTimeout(documentTranslateTimeoutRef.current);
+      documentTranslateTimeoutRef.current = null;
+    }
+    if (documentAbortControllerRef.current) {
+      documentAbortControllerRef.current.abort();
+      documentAbortControllerRef.current = null;
+    }
+
+    setLoading(false);
     setInputText('');
     setOutputText('');
     setSelectedImageFile(null);
+    setSelectedDocumentFile(null);
+    setTranslatedDocumentFilename('');
+    setTranslatedDocumentDownloadUrl('');
     setError('');
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
@@ -414,6 +544,16 @@ function PremiumPage() {
             }}
             onImageSelect={(file) => {
               setSelectedImageFile(file);
+              setSelectedDocumentFile(null);
+              setTranslatedDocumentFilename('');
+              setTranslatedDocumentDownloadUrl('');
+              setError('');
+            }}
+            onDocumentSelect={(file) => {
+              setSelectedDocumentFile(file);
+              setSelectedImageFile(null);
+              setTranslatedDocumentFilename('');
+              setTranslatedDocumentDownloadUrl('');
               setError('');
             }}
           />
@@ -443,6 +583,18 @@ function PremiumPage() {
                   </svg>
                   Mic
                 </button>
+                {translatedDocumentDownloadUrl ? (
+                  <a
+                    className="tool-btn"
+                    href={translatedDocumentDownloadUrl}
+                    download={translatedDocumentFilename || undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Download translated document"
+                  >
+                    Download file
+                  </a>
+                ) : null}
               </div>
             </>
           ) : null}
