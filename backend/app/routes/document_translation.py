@@ -17,9 +17,10 @@ async def translate_document_route(
     file: UploadFile = File(...),
     source_lang: str = Form(...),
     target_lang: str = Form(...),
+    tone: str = Form(default="neutral"),
 ) -> DocumentTranslateResponse:
     try:
-        result = await translate_document(file, source_lang, target_lang)
+        result = await translate_document(file, source_lang, target_lang, tone)
         return DocumentTranslateResponse(**result)
     except HTTPException:
         raise

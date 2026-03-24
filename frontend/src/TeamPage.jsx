@@ -3,6 +3,7 @@ import FreePlanTools from './FreePlanTools.jsx';
 import { detectLanguage } from './languageDetect.js';
 import { SOURCE_LANGUAGES, getTargetLanguages } from './supportedLanguagePairs.js';
 import { openTongueBridgeWebsiteTranslator } from './websiteTranslatorWindow.js';
+import { applyTonePreservingText } from './tonePreserving.js';
 import './TeamPage.css';
 
 function TeamPage() {
@@ -111,13 +112,14 @@ function TeamPage() {
     setError('');
 
     try {
+      const toneAdjustedText = applyTonePreservingText(inputText, toneMode);
       const response = await fetch('http://localhost:8000/translate/text', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: inputText,
+          text: toneAdjustedText,
           source_language: fromLang,
           target_language: toLang,
         }),
@@ -206,13 +208,14 @@ function TeamPage() {
 
       setInputText(extractedText);
 
+      const toneAdjustedExtractedText = applyTonePreservingText(extractedText, toneMode);
       const translationResponse = await fetch('http://localhost:8000/translate/text', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: extractedText,
+          text: toneAdjustedExtractedText,
           source_language: fromLang,
           target_language: toLang,
         }),
@@ -280,6 +283,7 @@ function TeamPage() {
       formData.append('file', documentFile);
       formData.append('source_lang', fromLang);
       formData.append('target_lang', toLang);
+      formData.append('tone', toneMode);
 
       const controller = new AbortController();
       documentAbortControllerRef.current = controller;

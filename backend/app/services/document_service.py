@@ -16,6 +16,62 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 SUPPORTED_EXTENSIONS = {".txt", ".pdf", ".doc", ".docx", ".ppt", ".pptx"}
 
 
+CONTRACTION_MAP = {
+    "can't": "cannot",
+    "won't": "will not",
+    "don't": "do not",
+    "didn't": "did not",
+    "isn't": "is not",
+    "aren't": "are not",
+    "i'm": "I am",
+    "it's": "it is",
+    "that's": "that is",
+    "there's": "there is",
+    "we're": "we are",
+    "you're": "you are",
+    "they're": "they are",
+    "i've": "I have",
+    "you've": "you have",
+}
+
+
+def _expand_contractions(text: str) -> str:
+    result = text
+    for short_form, long_form in CONTRACTION_MAP.items():
+        pattern = re.compile(f"\\b{re.escape(short_form)}\\b", re.IGNORECASE)
+        def replace_func(match):
+            if match.group(0)[0].isupper():
+                return long_form[0].upper() + long_form[1:]
+            return long_form
+        result = pattern.sub(replace_func, result)
+    return result
+
+
+def _to_sentence_case(text: str) -> str:
+    if not text:
+        return text
+    return text[0].upper() + text[1:]
+
+
+def _apply_tone_preserving_text(text: str, tone: str) -> str:
+    raw = text.strip()
+    if not raw:
+        return ""
+
+    if tone == "formal":
+        expanded = _expand_contractions(raw)
+        punctuated = expanded if re.search(r"[.!?]$", expanded) else f"{expanded}."
+        return f"Kindly note: {_to_sentence_case(punctuated)}"
+
+    if tone == "casual":
+        soft = re.sub(r"\bdo not\b", "don't", raw, flags=re.IGNORECASE)
+        soft = re.sub(r"\bcannot\b", "can't", soft, flags=re.IGNORECASE)
+        punctuated = soft if re.search(r"[.!?]$", soft) else f"{soft}!"
+        return f"Hey! {_to_sentence_case(punctuated)}"
+
+    return _to_sentence_case(raw)
+
+
 def _split_text_for_translation(text: str, max_chunk_size: int = 250) -> list[str]:
     normalized_text = re.sub(r"\s+", " ", text).strip()
     if not normalized_text:
@@ -114,6 +170,7 @@ async def translate_document(
     file: UploadFile,
     source_lang: str,
     target_lang: str,
+    tone: str = "neutral",
 ) -> dict:
     original_name = file.filename or "document.txt"
     suffix = Path(original_name).suffix.lower()
@@ -151,7 +208,12 @@ async def translate_document(
     if not extracted_text:
         raise HTTPException(status_code=400, detail="No readable text found in the uploaded document.")
 
-    text_chunks = _split_text_for_translation(extracted_text)
+    # Apply tone preserving if not neutral
+    text_to_translate = extracted_text
+    if tone != "neutral":
+        text_to_translate = _apply_tone_preserving_text(extracted_text, tone)
+
+    text_chunks = _split_text_for_translation(text_to_translate)
     if not text_chunks:
         raise HTTPException(status_code=400, detail="Document does not contain translatable text.")
 
