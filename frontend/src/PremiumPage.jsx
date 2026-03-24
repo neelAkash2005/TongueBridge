@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import { detectLanguage } from './languageDetect.js';
 import { SOURCE_LANGUAGES, getTargetLanguages } from './supportedLanguagePairs.js';
+import { openTongueBridgeWebsiteTranslator } from './websiteTranslatorWindow.js';
 import './PremiumPage.css';
 
 function PremiumPage() {
@@ -11,6 +12,8 @@ function PremiumPage() {
   const [outputText, setOutputText] = useState('');
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [selectedDocumentFile, setSelectedDocumentFile] = useState(null);
+  const [selectedWebsiteUrl, setSelectedWebsiteUrl] = useState('');
+  const [originalWebsiteText, setOriginalWebsiteText] = useState('');
   const [translatedDocumentFilename, setTranslatedDocumentFilename] = useState('');
   const [translatedDocumentDownloadUrl, setTranslatedDocumentDownloadUrl] = useState('');
   const [loading, setLoading] = useState(false);
@@ -95,6 +98,11 @@ function PremiumPage() {
 
     if (selectedDocumentFile) {
       await handleDocumentTranslate(selectedDocumentFile);
+      return;
+    }
+
+    if (selectedWebsiteUrl) {
+      await handleWebsiteTranslate();
       return;
     }
 
@@ -362,6 +370,32 @@ function PremiumPage() {
     }
   };
 
+  async function translateWebsite(url, sourceLang, targetLang) {
+    openTongueBridgeWebsiteTranslator(url, sourceLang, targetLang);
+  }
+
+  const handleWebsiteTranslate = async () => {
+    if (!selectedWebsiteUrl.trim()) {
+      setError('Enter website URL before translating website content.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setShowOutput(false);
+
+    try {
+      await translateWebsite(selectedWebsiteUrl.trim(), fromLang, toLang);
+    } catch (err) {
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleClear = () => {
     clearTriggeredAbortRef.current = true;
     if (documentTranslateTimeoutRef.current) {
@@ -378,6 +412,8 @@ function PremiumPage() {
     setOutputText('');
     setSelectedImageFile(null);
     setSelectedDocumentFile(null);
+    setSelectedWebsiteUrl('');
+    setOriginalWebsiteText('');
     setTranslatedDocumentFilename('');
     setTranslatedDocumentDownloadUrl('');
     setError('');
@@ -403,6 +439,14 @@ function PremiumPage() {
     setToneMode(item.tone);
     setShowOutput(true);
     setShowHistorySidebar(false);
+  };
+
+  const handleRestoreWebsiteOriginal = () => {
+    if (!originalWebsiteText) return;
+    setInputText(originalWebsiteText);
+    setOutputText('');
+    setShowOutput(false);
+    setError('');
   };
 
   return (
@@ -545,6 +589,7 @@ function PremiumPage() {
             onImageSelect={(file) => {
               setSelectedImageFile(file);
               setSelectedDocumentFile(null);
+              setSelectedWebsiteUrl('');
               setTranslatedDocumentFilename('');
               setTranslatedDocumentDownloadUrl('');
               setError('');
@@ -552,6 +597,16 @@ function PremiumPage() {
             onDocumentSelect={(file) => {
               setSelectedDocumentFile(file);
               setSelectedImageFile(null);
+              setSelectedWebsiteUrl('');
+              setTranslatedDocumentFilename('');
+              setTranslatedDocumentDownloadUrl('');
+              setError('');
+            }}
+            onWebsiteSelect={(url) => {
+              setSelectedWebsiteUrl(url);
+              setSelectedImageFile(null);
+              setSelectedDocumentFile(null);
+              setOriginalWebsiteText('');
               setTranslatedDocumentFilename('');
               setTranslatedDocumentDownloadUrl('');
               setError('');
@@ -603,6 +658,11 @@ function PremiumPage() {
             <button className="btn primary" onClick={handleTranslate} disabled={loading}>
               {loading ? 'Translating...' : 'Translate'}
             </button>
+            {selectedWebsiteUrl && originalWebsiteText ? (
+              <button className="btn ghost" onClick={handleRestoreWebsiteOriginal}>
+                Restore original
+              </button>
+            ) : null}
             <button className="btn ghost" onClick={handleClear}>Clear</button>
           </div>
         </div>

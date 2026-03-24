@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import './FreePlanTools.css';
 
-function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onImageSelect, onDocumentSelect }) {
+function FreePlanTools({
+  resetTrigger,
+  showAdvanced = false,
+  onSpeechToText,
+  onImageSelect,
+  onDocumentSelect,
+  onWebsiteSelect,
+}) {
   const [isListening, setIsListening] = useState(false);
   const [micError, setMicError] = useState('');
   const [imageError, setImageError] = useState('');
@@ -19,6 +26,7 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
   const onSpeechToTextRef = useRef(onSpeechToText);
   const onImageSelectRef = useRef(onImageSelect);
   const onDocumentSelectRef = useRef(onDocumentSelect);
+  const onWebsiteSelectRef = useRef(onWebsiteSelect);
 
   useEffect(() => {
     onSpeechToTextRef.current = onSpeechToText;
@@ -31,6 +39,10 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
   useEffect(() => {
     onDocumentSelectRef.current = onDocumentSelect;
   }, [onDocumentSelect]);
+
+  useEffect(() => {
+    onWebsiteSelectRef.current = onWebsiteSelect;
+  }, [onWebsiteSelect]);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -206,7 +218,11 @@ function FreePlanTools({ resetTrigger, showAdvanced = false, onSpeechToText, onI
   const handleWebsiteInput = () => {
     const value = window.prompt('Enter website URL');
     if (!value) return;
-    setWebsiteUrl(value.trim());
+    const nextUrl = value.trim();
+    setWebsiteUrl(nextUrl);
+    if (onWebsiteSelectRef.current) {
+      onWebsiteSelectRef.current(nextUrl);
+    }
   };
 
   return (
