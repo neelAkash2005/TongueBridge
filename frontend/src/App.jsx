@@ -14,6 +14,13 @@ import { useEffect, useRef, useState } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import PremiumPage from './PremiumPage.jsx';
 import TeamPage from './TeamPage.jsx';
+import { SOURCE_LANGUAGES, getTargetLanguages } from './supportedLanguagePairs.js';
+import {
+  FREE_IMAGE_DAILY_LIMIT,
+  formatTimeUntilReset,
+  getDailyUsageStatus,
+  incrementDailyUsage,
+} from './limits/freePlanUsage.js';
 
 // --- NEW: Team Data Array for 6 Developers ---
 const teamMembers = [
@@ -152,12 +159,19 @@ function App() {
 
   const [inputText, setInputText] = useState(''); 
   const [outputText, setOutputText] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [freeUsageStatus, setFreeUsageStatus] = useState({
+    imageRemaining: FREE_IMAGE_DAILY_LIMIT,
+    imageResetAtMs: null,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isOutputMicListening, setIsOutputMicListening] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [homeHistory, setHomeHistory] = useState([]);
   const [showHomeHistorySidebar, setShowHomeHistorySidebar] = useState(false);
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
+  const abortControllerRef = useRef(null);
   const [loggedInUsername, setLoggedInUsername] = useState('');
   const [loggedInEmail, setLoggedInEmail] = useState('');
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -220,20 +234,109 @@ function App() {
     },
   };
 
+  const targetLanguageOptions = getTargetLanguages(fromLang);
+
+  useEffect(() => {
+    if (!targetLanguageOptions.includes(toLang)) {
+      setToLang(targetLanguageOptions[0] || '');
+    }
+  }, [fromLang, toLang, targetLanguageOptions]);
+
   const swapLanguages = () => {
-    const temp = fromLang;
-    setFromLang(toLang);
-    setToLang(temp);
+    const nextFrom = toLang;
+    const nextTo = fromLang;
+    const nextTargets = getTargetLanguages(nextFrom);
+
+    setFromLang(nextFrom);
+    if (nextTargets.includes(nextTo)) {
+      setToLang(nextTo);
+    } else {
+      setToLang(nextTargets[0] || '');
+    }
+  };
+
+  const handleOutputMicToggle = () => {
+    if (!outputText.trim() || !window.speechSynthesis) return;
+
+    if (isOutputMicListening) {
+      window.speechSynthesis.cancel();
+      setIsOutputMicListening(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(outputText);
+    utterance.lang = 'en-US';
+    utterance.onend = () => setIsOutputMicListening(false);
+    utterance.onerror = () => setIsOutputMicListening(false);
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setIsOutputMicListening(true);
   };
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
 
+  const refreshFreeUsageStatus = () => {
+    const imageStatus = getDailyUsageStatus('image', FREE_IMAGE_DAILY_LIMIT);
+
+    setFreeUsageStatus({
+      imageRemaining: imageStatus.remaining,
+      imageResetAtMs: imageStatus.resetAtMs,
+    });
+
+    return { imageStatus };
+  };
+
+  const imageResetClockTime = freeUsageStatus.imageResetAtMs
+    ? new Date(freeUsageStatus.imageResetAtMs).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+    : '--';
+
+  const imageResetIn = freeUsageStatus.imageResetAtMs
+    ? formatTimeUntilReset(freeUsageStatus.imageResetAtMs)
+    : '--';
+
+  useEffect(() => {
+    refreshFreeUsageStatus();
+  }, []);
+
   const handleTranslate = async () => {
+    const { imageStatus } = refreshFreeUsageStatus();
+
+    if (selectedImageFile) {
+      if (!imageStatus.allowed) {
+        const resetIn = formatTimeUntilReset(imageStatus.resetAtMs);
+        const resetAtClock = new Date(imageStatus.resetAtMs).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+        setError(`Free plan image-to-text limit reached (${FREE_IMAGE_DAILY_LIMIT}/${FREE_IMAGE_DAILY_LIMIT}). Try again in ${resetIn} (around ${resetAtClock}).`);
+        setShowOutput(false);
+        return;
+      }
+
+      try {
+        await handleImageTranslate(selectedImageFile);
+        incrementDailyUsage('image');
+        refreshFreeUsageStatus();
+      } catch {
+        // Error is already handled in handleImageTranslate.
+      }
+      return;
+    }
+
     if (inputText.trim() === '') return;
+
     setLoading(true);
     setError('');
+
+    abortControllerRef.current = new AbortController();
 
     try {
       const response = await fetch('http://localhost:8000/translate/text', {
@@ -241,6 +344,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
+        signal: abortControllerRef.current.signal,
         body: JSON.stringify({
           text: inputText,
           source_language: fromLang,
@@ -249,7 +353,16 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to translate text.');
+        let errorMessage = 'Failed to translate text.';
+        try {
+          const errorData = await response.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -274,17 +387,133 @@ function App() {
         ...previousHistory.slice(0, 49),
       ]);
     } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
-      setShowOutput(false);
+      // Don't show output if request was aborted (user clicked Clear)
+      if (err.name !== 'AbortError') {
+        const fallbackMessage =
+          'Could not connect to backend. Please start backend server at http://localhost:8000.';
+        setError(err.message === 'Failed to fetch' ? fallbackMessage : (err.message || fallbackMessage));
+        setOutputText('');
+        setShowOutput(true);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageTranslate = async (imageFile) => {
+    setLoading(true);
+    setError('');
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
+
+    abortControllerRef.current = new AbortController();
+
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('source_language', fromLang);
+
+      const extractionResponse = await fetch('http://localhost:8000/translate/image/extract', {
+        method: 'POST',
+        body: formData,
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!extractionResponse.ok) {
+        let errorMessage = 'Image text extraction failed.';
+        try {
+          const errorData = await extractionResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const extractionData = await extractionResponse.json();
+      const extractedText = extractionData.extracted_text || '';
+
+      setInputText(extractedText);
+
+      const translationResponse = await fetch('http://localhost:8000/translate/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: extractedText,
+          source_language: fromLang,
+          target_language: toLang,
+        }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!translationResponse.ok) {
+        let errorMessage = 'Text translation failed.';
+        try {
+          const errorData = await translationResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const translationData = await translationResponse.json();
+      const translatedText = translationData.translated_text || '';
+
+      setOutputText(translatedText);
+      setShowOutput(true);
+
+      setHomeHistory((previousHistory) => [
+        {
+          id: Date.now(),
+          input: extractedText,
+          output: translatedText,
+          fromLang,
+          toLang,
+          timestamp: new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+        },
+        ...previousHistory.slice(0, 49),
+      ]);
+    } catch (err) {
+      // Don't show output if request was aborted (user clicked Clear)
+      if (err.name !== 'AbortError') {
+        const fallbackMessage =
+          'Could not connect to backend. Please start backend server at http://localhost:8000.';
+        const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+        setError(message);
+        setShowOutput(true);
+        throw new Error(message);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleClear = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     setInputText('');
     setOutputText('');
+    setSelectedImageFile(null);
     setError('');
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
     setShowOutput(false);
     setFreeToolsResetTrigger((previous) => previous + 1);
   };
@@ -1188,20 +1417,20 @@ const closeLearnMore = () => {
     <ul>
       <li> 1 user </li>
       <li> Unlimited text translations </li>
-      <li> Basic audio translation (limited) </li>
-      <li> Limited image-to-text translation (up to 9 images) </li>
+      <li> Basic audio translations </li>
+      <li> Limited image-to-text translations (up to 9 images) </li>
     </ul>
     
       🔵 Premium (₹349)
     <ul>
       <li> 1 user </li>
       <li> Unlimited searches</li>
-      <li> Unlimited text and audio translation </li>
-      <li> Language detection + translation </li>
-      <li> Image-to-text translation (unlimited) </li>
-      <li> Document translation  </li>
-      <li> Website translation </li>
-      <li> Tone-Preserving translation </li>
+      <li> Unlimited text and audio translations </li>
+      <li> Language detection + translations </li>
+      <li> Image-to-text translations (unlimited) </li>
+      <li> Document translations  </li>
+      <li> Website translations </li>
+      <li> Tone-Preserving translations </li>
     </ul>
     
       🟣 Team (₹999)
@@ -1397,10 +1626,9 @@ const closeLearnMore = () => {
                       onChange={(e) => setFromLang(e.target.value)}
                       aria-label="Source language"
                     >
-                      <option>English</option>
-                      <option>Hindi</option>
-                      <option>Spanish</option>
-                      <option>French</option>
+                      {SOURCE_LANGUAGES.map((language) => (
+                        <option key={language} value={language}>{language}</option>
+                      ))}
                     </select>
                   </div>
                   <button className="swap-btn" onClick={swapLanguages} type="button" title="Swap languages">
@@ -1414,10 +1642,9 @@ const closeLearnMore = () => {
                       onChange={(e) => setToLang(e.target.value)}
                       aria-label="Target language"
                     >
-                      <option>Spanish</option>
-                      <option>English</option>
-                      <option>French</option>
-                      <option>Hindi</option>
+                      {targetLanguageOptions.map((language) => (
+                        <option key={language} value={language}>{language}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -1429,18 +1656,55 @@ const closeLearnMore = () => {
                   onChange={(e) => setInputText(e.target.value)}
                 />
 
-                <FreePlanTools resetTrigger={freeToolsResetTrigger} />
+                <FreePlanTools
+                  resetTrigger={freeToolsResetTrigger}
+                  onSpeechToText={(transcript) => {
+                    setInputText((previous) => (previous ? `${previous} ${transcript}` : transcript));
+                    setSelectedImageFile(null);
+                    setError('');
+                  }}
+                  onImageSelect={(file) => {
+                    setSelectedImageFile(file);
+                    setError('');
+                  }}
+                />
+
+                <p className="free-tool-note">
+                  Free limits today · Image: {freeUsageStatus.imageRemaining}/{FREE_IMAGE_DAILY_LIMIT} left
+                </p>
+                {freeUsageStatus.imageRemaining <= 0 ? (
+                  <p className="free-tool-note">
+                    Image limit resets at {imageResetClockTime} ({imageResetIn} left)
+                  </p>
+                ) : null}
 
                 {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
 
                 {showOutput && (
-                  <textarea
-                    rows="5"
-                    value={outputText}
-                    readOnly
-                    className="output-box"
-                    style={{ marginTop: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-                  />
+                  <>
+                    <textarea
+                      rows="5"
+                      value={outputText}
+                      readOnly
+                      className="output-box"
+                      style={{ marginTop: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                    />
+                    <div className="free-tools-row" style={{ marginTop: '0.75rem' }}>
+                      <button
+                        className={`tool-btn ${isOutputMicListening ? 'active' : ''}`}
+                        type="button"
+                        onClick={handleOutputMicToggle}
+                        aria-pressed={isOutputMicListening}
+                        title="Mic"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M12 14C13.66 14 15 12.66 15 11V5C15 3.34 13.66 2 12 2C10.34 2 9 3.34 9 5V11C9 12.66 10.34 14 12 14Z" fill="currentColor"/>
+                          <path d="M19 11C19 14.53 16.39 17.43 13 17.93V21H11V17.93C7.61 17.43 5 14.53 5 11H7C7 13.76 9.24 16 12 16C14.76 16 17 13.76 17 11H19Z" fill="currentColor"/>
+                        </svg>
+                        Mic
+                      </button>
+                    </div>
+                  </>
                 )}
 
                 <div className="card-actions">
@@ -1498,9 +1762,9 @@ const closeLearnMore = () => {
                 <p className="plan-lead">✦ Perfect to get started:</p> <br />
                 <ul className="plan-list">
                   <li><span className="plan-icon">◈</span> Basic translations per day</li>
-                  <li><span className="plan-icon">✎</span> Unlimited text translation</li>
-                  <li><span className="plan-icon">♫</span> Audio translation (limited - up to 10 translations)</li>
-                  <li><span className="plan-icon">◉</span> Image-to-text translation (limited - up to 9 images)</li>
+                  <li><span className="plan-icon">✎</span> Unlimited text translations </li>
+                  <li><span className="plan-icon">♫</span> Unlimited basic audio translations </li>
+                  <li><span className="plan-icon">◉</span> Image-to-text translations (limited - up to 9 images) per day</li>
                 </ul>
               </div>
               <button className="btn ghost">Keep free</button>
@@ -1517,12 +1781,12 @@ const closeLearnMore = () => {
               <div className="plan-note">
                 <p className="plan-lead">✦ Everything in Free, plus:</p><br />
                 <ul className="plan-list">
-                  <li><span className="plan-icon">∞</span> Unlimited text & audio translation</li>
-                  <li><span className="plan-icon">◎</span> Language detection with translation</li>
-                  <li><span className="plan-icon">◉</span> Image-to-Text translation (unlimited)</li>
-                  <li><span className="plan-icon">▣</span> Document translation</li>
-                  <li><span className="plan-icon">⌁</span> Website translation</li>
-                  <li><span className="plan-icon">♢</span> Tone-preserving translation</li>
+                  <li><span className="plan-icon">∞</span> Unlimited text & audio translations </li>
+                  <li><span className="plan-icon">◎</span> Language detection with translations </li>
+                  <li><span className="plan-icon">◉</span> Image-to-Text translations (unlimited)</li>
+                  <li><span className="plan-icon">▣</span> Document translations </li>
+                  <li><span className="plan-icon">⌁</span> Website translations </li>
+                  <li><span className="plan-icon">♢</span> Tone-preserving translations </li>
                 </ul>
               </div>
               <button className="btn primary" type="button" onClick={() => handleProtectedPlanOpen('premium')}>Go Premium</button>
@@ -1539,9 +1803,9 @@ const closeLearnMore = () => {
                 <p className="plan-lead">✦ Everything in Premium, plus:</p> <br />
                 <ul className="plan-list">
                   <li><span className="plan-icon">◍</span> Up to 6 users (shared access across devices)</li>
-                  <li><span className="plan-icon">⟡</span> Shared access to features & translations</li>
-                  <li><span className="plan-icon">⚡</span> Faster processing</li>
-                  <li><span className="plan-icon">☍</span> Team history & collaboration support</li>
+                  <li><span className="plan-icon">⟡</span> Shared access to features & translations </li>
+                  <li><span className="plan-icon">⚡</span> Faster processing </li>
+                  <li><span className="plan-icon">☍</span> Team history & collaboration support </li>
                 </ul>
               </div>
               <button className="btn ghost" type="button" onClick={() => handleProtectedPlanOpen('team')}>Go Team</button>

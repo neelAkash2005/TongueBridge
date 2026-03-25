@@ -1,2 +1,14 @@
 fastapi
 uvicorn[standard]
+transformers
+torch
+sentencepiece
+SpeechRecognition
+python-multipart
+Pillow
+pytesseract
+gTTS
+pypdf
+python-docx
+olefile
+python-pptx
