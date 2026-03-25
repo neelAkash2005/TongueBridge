@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import { detectLanguage } from './languageDetect.js';
+import { applyTonePreservingText } from './tonePreserving.js';
 import './PremiumPage.css';
 
 function PremiumPage() {
@@ -8,8 +9,6 @@ function PremiumPage() {
   const [toLang, setToLang] = useState('Spanish');
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [showOutput, setShowOutput] = useState(false);
   const [toneMode, setToneMode] = useState('neutral');
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
@@ -44,62 +43,34 @@ function PremiumPage() {
     setToLang(temp);
   };
 
-  const handleTranslate = async () => {
+  const handleTranslate = () => {
     if (inputText.trim() === '') return;
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('http://localhost:8000/translate/text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: inputText,
-          source_language: fromLang,
-          target_language: toLang,
+    const result = applyTonePreservingText(inputText, toneMode);
+    setOutputText(result);
+    setShowOutput(true);
+    
+    // Add to history (keep last 50)
+    setHistory((prevHistory) => [
+      {
+        id: Date.now(),
+        input: inputText,
+        output: result,
+        fromLang,
+        toLang,
+        tone: toneMode,
+        timestamp: new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
         }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to translate text.');
-      }
-
-      const data = await response.json();
-      const result = data.translated_text || '';
-
-      setOutputText(result);
-      setShowOutput(true);
-
-      setHistory((prevHistory) => [
-        {
-          id: Date.now(),
-          input: inputText,
-          output: result,
-          fromLang,
-          toLang,
-          tone: toneMode,
-          timestamp: new Date().toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          }),
-        },
-        ...prevHistory.slice(0, 49),
-      ]);
-    } catch (err) {
-      setError(err.message || 'Something went wrong. Please try again.');
-      setShowOutput(false);
-    } finally {
-      setLoading(false);
-    }
+      },
+      ...prevHistory.slice(0, 49),
+    ]);
   };
 
   const handleClear = () => {
     setInputText('');
     setOutputText('');
-    setError('');
     setShowOutput(false);
     setFreeToolsResetTrigger((previous) => previous + 1);
   };
@@ -254,8 +225,6 @@ function PremiumPage() {
 
           <FreePlanTools resetTrigger={freeToolsResetTrigger} showAdvanced />
 
-          {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
-
           {showOutput ? (
             <textarea
               rows="5"
@@ -267,9 +236,7 @@ function PremiumPage() {
           ) : null}
 
           <div className="card-actions">
-            <button className="btn primary" onClick={handleTranslate} disabled={loading}>
-              {loading ? 'Translating...' : 'Translate'}
-            </button>
+            <button className="btn primary" onClick={handleTranslate}>Translate</button>
             <button className="btn ghost" onClick={handleClear}>Clear</button>
           </div>
         </div>
