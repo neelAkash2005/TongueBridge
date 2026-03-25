@@ -162,6 +162,7 @@ function App() {
   const [selectedImageFile, setSelectedImageFile] = useState(null);
   const [freeUsageStatus, setFreeUsageStatus] = useState({
     imageRemaining: FREE_IMAGE_DAILY_LIMIT,
+    imageResetAtMs: null,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -282,10 +283,23 @@ function App() {
 
     setFreeUsageStatus({
       imageRemaining: imageStatus.remaining,
+      imageResetAtMs: imageStatus.resetAtMs,
     });
 
     return { imageStatus };
   };
+
+  const imageResetClockTime = freeUsageStatus.imageResetAtMs
+    ? new Date(freeUsageStatus.imageResetAtMs).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+    })
+    : '--';
+
+  const imageResetIn = freeUsageStatus.imageResetAtMs
+    ? formatTimeUntilReset(freeUsageStatus.imageResetAtMs)
+    : '--';
 
   useEffect(() => {
     refreshFreeUsageStatus();
@@ -297,7 +311,12 @@ function App() {
     if (selectedImageFile) {
       if (!imageStatus.allowed) {
         const resetIn = formatTimeUntilReset(imageStatus.resetAtMs);
-        setError(`Free plan image-to-text limit reached (${FREE_IMAGE_DAILY_LIMIT}/${FREE_IMAGE_DAILY_LIMIT}). Try again in ${resetIn}.`);
+        const resetAtClock = new Date(imageStatus.resetAtMs).toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        });
+        setError(`Free plan image-to-text limit reached (${FREE_IMAGE_DAILY_LIMIT}/${FREE_IMAGE_DAILY_LIMIT}). Try again in ${resetIn} (around ${resetAtClock}).`);
         setShowOutput(false);
         return;
       }
@@ -1653,6 +1672,11 @@ const closeLearnMore = () => {
                 <p className="free-tool-note">
                   Free limits today · Image: {freeUsageStatus.imageRemaining}/{FREE_IMAGE_DAILY_LIMIT} left
                 </p>
+                {freeUsageStatus.imageRemaining <= 0 ? (
+                  <p className="free-tool-note">
+                    Image limit resets at {imageResetClockTime} ({imageResetIn} left)
+                  </p>
+                ) : null}
 
                 {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
 

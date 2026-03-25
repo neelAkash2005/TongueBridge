@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'tonguebridge_free_plan_daily_usage';
-const WINDOW_MS = 24 * 60 * 60 * 1000;
+const WINDOW_MS = 12 * 60 * 60 * 1000;
 
 export const FREE_IMAGE_DAILY_LIMIT = 9;
 
