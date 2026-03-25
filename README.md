@@ -14,6 +14,12 @@ Real-time voice-to-voice and multi-format translation web application.
 - Speech translation
 - Document translation (PDF, DOCX, TXT, PPT, PPTX, DOC)
 - Download translated documents via API
+- Website translation via Google Translate web URL
+- Tone-preserving translation controls:
+	- `neutral` — keeps text close to original phrasing
+	- `formal` — rewrites with more formal wording before translation
+	- `casual` — rewrites with more conversational wording before translation
+	- Applied in Team workflows for text, image-extracted text, and document translation
 
 ## Prerequisites
 
