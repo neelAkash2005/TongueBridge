@@ -1,19 +1,118 @@
 import { useEffect, useRef, useState } from 'react';
 import './FreePlanTools.css';
 
-function FreePlanTools({ resetTrigger, showAdvanced = false }) {
+function FreePlanTools({
+  resetTrigger,
+  showAdvanced = false,
+  onSpeechToText,
+  onImageSelect,
+  onDocumentSelect,
+  onWebsiteSelect,
+}) {
   const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError] = useState('');
+  const [imageError, setImageError] = useState('');
   const [uploadedImageName, setUploadedImageName] = useState('');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+  const [isImagePreviewVisible, setIsImagePreviewVisible] = useState(false);
   const [uploadedDocumentName, setUploadedDocumentName] = useState('');
+  const [documentPreviewContent, setDocumentPreviewContent] = useState('');
+  const [documentPreviewUrl, setDocumentPreviewUrl] = useState('');
+  const [isDocumentPreviewVisible, setIsDocumentPreviewVisible] = useState(false);
   const [websiteUrl, setWebsiteUrl] = useState('');
   const imageInputRef = useRef(null);
   const documentInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const onSpeechToTextRef = useRef(onSpeechToText);
+  const onImageSelectRef = useRef(onImageSelect);
+  const onDocumentSelectRef = useRef(onDocumentSelect);
+  const onWebsiteSelectRef = useRef(onWebsiteSelect);
+
+  useEffect(() => {
+    onSpeechToTextRef.current = onSpeechToText;
+  }, [onSpeechToText]);
+
+  useEffect(() => {
+    onImageSelectRef.current = onImageSelect;
+  }, [onImageSelect]);
+
+  useEffect(() => {
+    onDocumentSelectRef.current = onDocumentSelect;
+  }, [onDocumentSelect]);
+
+  useEffect(() => {
+    onWebsiteSelectRef.current = onWebsiteSelect;
+  }, [onWebsiteSelect]);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setMicError('');
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event) => {
+      setIsListening(false);
+      if (event.error === 'not-allowed') {
+        setMicError('Microphone permission denied. Please allow microphone access.');
+      } else {
+        setMicError('Could not capture voice. Please try again.');
+      }
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results?.[0]?.[0]?.transcript?.trim();
+      if (transcript && onSpeechToTextRef.current) {
+        onSpeechToTextRef.current(transcript);
+      }
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+      recognitionRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     setIsListening(false);
+    setMicError('');
+    setImageError('');
     setUploadedImageName('');
+    setIsImagePreviewVisible(false);
+    setImagePreviewUrl((previousUrl) => {
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      return '';
+    });
     setUploadedDocumentName('');
+    setDocumentPreviewContent('');
+    setDocumentPreviewUrl((previousUrl) => {
+      if (previousUrl) {
+        URL.revokeObjectURL(previousUrl);
+      }
+      return '';
+    });
+    setIsDocumentPreviewVisible(false);
     setWebsiteUrl('');
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
     if (imageInputRef.current) {
       imageInputRef.current.value = '';
     }
@@ -22,26 +121,108 @@ function FreePlanTools({ resetTrigger, showAdvanced = false }) {
     }
   }, [resetTrigger]);
 
+  useEffect(() => () => {
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+    if (documentPreviewUrl) {
+      URL.revokeObjectURL(documentPreviewUrl);
+    }
+  }, [imagePreviewUrl, documentPreviewUrl]);
+
   const toggleMic = () => {
-    setIsListening((prev) => !prev);
+    if (!recognitionRef.current) {
+      setMicError('Speech recognition is not supported in this browser.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    setMicError('');
+    try {
+      recognitionRef.current.start();
+    } catch {
+      setIsListening(false);
+      setMicError('Could not start microphone. Please try again.');
+    }
   };
 
-  const handleImageSelect = (event) => {
+  const handleImageSelect = async (event) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
+
+    if (imagePreviewUrl) {
+      URL.revokeObjectURL(imagePreviewUrl);
+    }
+
+    const previewUrl = URL.createObjectURL(selectedFile);
+    setImagePreviewUrl(previewUrl);
     setUploadedImageName(selectedFile.name);
+    setIsImagePreviewVisible(false);
+
+    await new Promise((resolve) => {
+      window.requestAnimationFrame(() => resolve());
+    });
+
+    setImageError('');
+
+    if (onImageSelectRef.current) {
+      try {
+        onImageSelectRef.current(selectedFile);
+      } catch (error) {
+        setImageError(error?.message || 'Image selection failed. Please try again.');
+      }
+    }
   };
 
   const handleDocumentSelect = (event) => {
     const selectedFile = event.target.files?.[0];
     if (!selectedFile) return;
     setUploadedDocumentName(selectedFile.name);
+    setIsDocumentPreviewVisible(false);
+
+    if (documentPreviewUrl) {
+      URL.revokeObjectURL(documentPreviewUrl);
+    }
+    setDocumentPreviewUrl('');
+
+    const fileExt = selectedFile.name.toLowerCase().split('.').pop();
+    const fileSize = (selectedFile.size / 1024).toFixed(2);
+    
+    if (fileExt === 'txt') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result || '';
+        setDocumentPreviewContent(content.substring(0, 500));
+      };
+      reader.onerror = () => {
+        setDocumentPreviewContent('Could not read file content');
+      };
+      reader.readAsText(selectedFile);
+    } else if (fileExt === 'pdf') {
+      const previewUrl = URL.createObjectURL(selectedFile);
+      setDocumentPreviewUrl(previewUrl);
+      setDocumentPreviewContent(`📄 ${selectedFile.name}\n\nFile size: ${fileSize} KB\n\nFormat: PDF\n\n(PDF preview below)`);
+    } else {
+      setDocumentPreviewContent(`📄 ${selectedFile.name}\n\nFile size: ${fileSize} KB\n\nFormat: ${fileExt.toUpperCase()}\n\nClick "Translate" to process this document.`);
+    }
+
+    if (onDocumentSelectRef.current) {
+      onDocumentSelectRef.current(selectedFile);
+    }
   };
 
   const handleWebsiteInput = () => {
     const value = window.prompt('Enter website URL');
     if (!value) return;
-    setWebsiteUrl(value.trim());
+    const nextUrl = value.trim();
+    setWebsiteUrl(nextUrl);
+    if (onWebsiteSelectRef.current) {
+      onWebsiteSelectRef.current(nextUrl);
+    }
   };
 
   return (
@@ -112,7 +293,7 @@ function FreePlanTools({ resetTrigger, showAdvanced = false }) {
         <input
           ref={documentInputRef}
           type="file"
-          accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx"
+          accept=".pdf,.doc,.docx,.txt,.ppt,.pptx"
           onChange={handleDocumentSelect}
           style={{ display: 'none' }}
         />
@@ -123,8 +304,45 @@ function FreePlanTools({ resetTrigger, showAdvanced = false }) {
           {showAdvanced ? '🎙️ Mic activated' : '🎙️ Mic active (limited access)'}
         </p>
       ) : null}
-      {uploadedImageName ? <p className="free-tool-note">🖼️ Selected image: {uploadedImageName}</p> : null}
-      {showAdvanced && uploadedDocumentName ? <p className="free-tool-note">📄 Selected document: {uploadedDocumentName}</p> : null}
+      {micError ? <p className="free-tool-note">⚠️ {micError}</p> : null}
+      {imageError ? <p className="free-tool-note">⚠️ {imageError}</p> : null}
+      {uploadedImageName ? (
+        <button
+          type="button"
+          className="image-name-trigger"
+          onClick={() => setIsImagePreviewVisible((previous) => !previous)}
+          title="Click to view selected image"
+        >
+          🖼️ Selected image: {uploadedImageName}
+        </button>
+      ) : null}
+      {imagePreviewUrl && isImagePreviewVisible ? (
+        <div className="image-preview-wrap">
+          <img src={imagePreviewUrl} alt="Selected upload" className="image-preview" />
+        </div>
+      ) : null}
+      {showAdvanced && uploadedDocumentName ? (
+        <button
+          type="button"
+          className="image-name-trigger"
+          onClick={() => setIsDocumentPreviewVisible((previous) => !previous)}
+          title="Click to view selected document"
+        >
+          📄 Selected document: {uploadedDocumentName}
+        </button>
+      ) : null}
+      {showAdvanced && documentPreviewContent && isDocumentPreviewVisible ? (
+        <div className="document-preview-wrap">
+          <pre className="document-preview">{documentPreviewContent}</pre>
+          {documentPreviewUrl && (
+            <iframe
+              src={documentPreviewUrl}
+              className="document-pdf-viewer"
+              title="Document preview"
+            />
+          )}
+        </div>
+      ) : null}
       {showAdvanced && websiteUrl ? <p className="free-tool-note">🌐 Website: {websiteUrl}</p> : null}
     </>
   );

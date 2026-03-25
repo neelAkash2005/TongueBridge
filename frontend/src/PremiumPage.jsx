@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import FreePlanTools from './FreePlanTools.jsx';
 import { detectLanguage } from './languageDetect.js';
+import { SOURCE_LANGUAGES, getTargetLanguages } from './supportedLanguagePairs.js';
+import { openTongueBridgeWebsiteTranslator } from './websiteTranslatorWindow.js';
 import { applyTonePreservingText } from './tonePreserving.js';
 import './PremiumPage.css';
 
@@ -9,11 +11,23 @@ function PremiumPage() {
   const [toLang, setToLang] = useState('Spanish');
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [selectedDocumentFile, setSelectedDocumentFile] = useState(null);
+  const [selectedWebsiteUrl, setSelectedWebsiteUrl] = useState('');
+  const [originalWebsiteText, setOriginalWebsiteText] = useState('');
+  const [translatedDocumentFilename, setTranslatedDocumentFilename] = useState('');
+  const [translatedDocumentDownloadUrl, setTranslatedDocumentDownloadUrl] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [isOutputMicListening, setIsOutputMicListening] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [toneMode, setToneMode] = useState('neutral');
   const [freeToolsResetTrigger, setFreeToolsResetTrigger] = useState(0);
   const [history, setHistory] = useState([]);
   const [showHistorySidebar, setShowHistorySidebar] = useState(false);
+  const documentAbortControllerRef = useRef(null);
+  const documentTranslateTimeoutRef = useRef(null);
+  const clearTriggeredAbortRef = useRef(false);
   const detectedLanguage = detectLanguage(inputText);
 
   // Load history from localStorage on mount
@@ -37,40 +51,380 @@ function PremiumPage() {
     }
   }, [history]);
 
+  const targetLanguageOptions = getTargetLanguages(fromLang);
+
+  useEffect(() => {
+    if (!targetLanguageOptions.includes(toLang)) {
+      setToLang(targetLanguageOptions[0] || '');
+    }
+  }, [fromLang, toLang, targetLanguageOptions]);
+
   const swapLanguages = () => {
-    const temp = fromLang;
-    setFromLang(toLang);
-    setToLang(temp);
+    const nextFrom = toLang;
+    const nextTo = fromLang;
+    const nextTargets = getTargetLanguages(nextFrom);
+
+    setFromLang(nextFrom);
+    if (nextTargets.includes(nextTo)) {
+      setToLang(nextTo);
+    } else {
+      setToLang(nextTargets[0] || '');
+    }
   };
 
-  const handleTranslate = () => {
+  const handleOutputMicToggle = () => {
+    if (!outputText.trim() || !window.speechSynthesis) return;
+
+    if (isOutputMicListening) {
+      window.speechSynthesis.cancel();
+      setIsOutputMicListening(false);
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(outputText);
+    utterance.lang = 'en-US';
+    utterance.onend = () => setIsOutputMicListening(false);
+    utterance.onerror = () => setIsOutputMicListening(false);
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+    setIsOutputMicListening(true);
+  };
+
+  const handleTranslate = async () => {
+    if (selectedImageFile) {
+      await handleImageTranslate(selectedImageFile);
+      return;
+    }
+
+    if (selectedDocumentFile) {
+      await handleDocumentTranslate(selectedDocumentFile);
+      return;
+    }
+
+    if (selectedWebsiteUrl) {
+      await handleWebsiteTranslate();
+      return;
+    }
+
     if (inputText.trim() === '') return;
-    const result = applyTonePreservingText(inputText, toneMode);
-    setOutputText(result);
-    setShowOutput(true);
-    
-    // Add to history (keep last 50)
-    setHistory((prevHistory) => [
-      {
-        id: Date.now(),
-        input: inputText,
-        output: result,
-        fromLang,
-        toLang,
-        tone: toneMode,
-        timestamp: new Date().toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
+    setLoading(true);
+    setError('');
+
+    try {
+      const toneAdjustedText = applyTonePreservingText(inputText, toneMode);
+      const response = await fetch('http://localhost:8000/translate/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: toneAdjustedText,
+          source_language: fromLang,
+          target_language: toLang,
         }),
-      },
-      ...prevHistory.slice(0, 49),
-    ]);
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to translate text.';
+        try {
+          const errorData = await response.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      const result = data.translated_text || '';
+
+      setOutputText(result);
+      setShowOutput(true);
+
+      setHistory((prevHistory) => [
+        {
+          id: Date.now(),
+          input: inputText,
+          output: result,
+          fromLang,
+          toLang,
+          tone: toneMode,
+          timestamp: new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+        },
+        ...prevHistory.slice(0, 49),
+      ]);
+    } catch (err) {
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      setError(err.message === 'Failed to fetch' ? fallbackMessage : (err.message || fallbackMessage));
+      setOutputText('');
+      setShowOutput(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageTranslate = async (imageFile) => {
+    setLoading(true);
+    setError('');
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('source_language', fromLang);
+
+      const extractionResponse = await fetch('http://localhost:8000/translate/image/extract', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!extractionResponse.ok) {
+        let errorMessage = 'Image text extraction failed.';
+        try {
+          const errorData = await extractionResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const extractionData = await extractionResponse.json();
+      const extractedText = extractionData.extracted_text || '';
+
+      setInputText(extractedText);
+
+      const toneAdjustedExtractedText = applyTonePreservingText(extractedText, toneMode);
+      const translationResponse = await fetch('http://localhost:8000/translate/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: toneAdjustedExtractedText,
+          source_language: fromLang,
+          target_language: toLang,
+        }),
+      });
+
+      if (!translationResponse.ok) {
+        let errorMessage = 'Text translation failed.';
+        try {
+          const errorData = await translationResponse.json();
+          if (errorData?.detail) {
+            errorMessage = errorData.detail;
+          }
+        } catch {
+          // Keep default message if response body is not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const translationData = await translationResponse.json();
+      const translatedText = translationData.translated_text || '';
+
+      setOutputText(translatedText);
+      setShowOutput(true);
+
+      setHistory((prevHistory) => [
+        {
+          id: Date.now(),
+          input: extractedText,
+          output: translatedText,
+          fromLang,
+          toLang,
+          tone: toneMode,
+          timestamp: new Date().toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          }),
+        },
+        ...prevHistory.slice(0, 49),
+      ]);
+    } catch (err) {
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+      setError(message);
+      setShowOutput(true);
+      throw new Error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDocumentTranslate = async (documentFile) => {
+    setLoading(true);
+    setError('');
+    clearTriggeredAbortRef.current = false;
+
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', documentFile);
+      formData.append('source_lang', fromLang);
+      formData.append('target_lang', toLang);
+      formData.append('tone', toneMode);
+
+      const controller = new AbortController();
+      documentAbortControllerRef.current = controller;
+      documentTranslateTimeoutRef.current = setTimeout(() => controller.abort(), 180000); // 180 second timeout for full document translation
+
+      try {
+        const response = await fetch('http://localhost:8000/translate/document', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+
+        if (documentTranslateTimeoutRef.current) {
+          clearTimeout(documentTranslateTimeoutRef.current);
+          documentTranslateTimeoutRef.current = null;
+        }
+        documentAbortControllerRef.current = null;
+
+        if (!response.ok) {
+          let errorMessage = 'Document translation failed.';
+          try {
+            const errorData = await response.json();
+            if (errorData?.detail) {
+              errorMessage = errorData.detail;
+            }
+          } catch {
+            // Keep default message if response body is not JSON
+          }
+          throw new Error(errorMessage);
+        }
+
+        const data = await response.json();
+        const extractedText = data.extracted_text || '';
+        const translatedText = data.translated_text || '';
+        const filename = data.filename || '';
+        const downloadUrl = data.download_url ? `http://localhost:8000${data.download_url}` : '';
+
+        // Set extracted text in input box and translated text in output box
+        setInputText(extractedText);
+        setOutputText(translatedText);
+        setTranslatedDocumentFilename(filename);
+        setTranslatedDocumentDownloadUrl(downloadUrl);
+        setShowOutput(true);
+
+        // Add to history using the extracted and translated text
+        setHistory((prevHistory) => [
+          {
+            id: Date.now(),
+            input: extractedText,
+            output: translatedText,
+            fromLang,
+            toLang,
+            tone: toneMode,
+            timestamp: new Date().toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            }),
+          },
+          ...prevHistory.slice(0, 49),
+        ]);
+      } catch (fetchErr) {
+        if (documentTranslateTimeoutRef.current) {
+          clearTimeout(documentTranslateTimeoutRef.current);
+          documentTranslateTimeoutRef.current = null;
+        }
+        documentAbortControllerRef.current = null;
+
+        if (fetchErr.name === 'AbortError') {
+          if (clearTriggeredAbortRef.current) {
+            return;
+          }
+          throw new Error('Document translation is taking longer than expected. This may indicate a backend issue or very large document. Please check your backend server.');
+        }
+        throw fetchErr;
+      }
+    } catch (err) {
+      if (clearTriggeredAbortRef.current) {
+        return;
+      }
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+      setError(message);
+      setShowOutput(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  async function translateWebsite(url, sourceLang, targetLang) {
+    openTongueBridgeWebsiteTranslator(url, sourceLang, targetLang);
+  }
+
+  const handleWebsiteTranslate = async () => {
+    if (!selectedWebsiteUrl.trim()) {
+      setError('Enter website URL before translating website content.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setShowOutput(false);
+
+    try {
+      await translateWebsite(selectedWebsiteUrl.trim(), fromLang, toLang);
+    } catch (err) {
+      const fallbackMessage =
+        'Could not connect to backend. Please start backend server at http://localhost:8000.';
+      const message = err?.message === 'Failed to fetch' ? fallbackMessage : (err?.message || fallbackMessage);
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClear = () => {
+    clearTriggeredAbortRef.current = true;
+    if (documentTranslateTimeoutRef.current) {
+      clearTimeout(documentTranslateTimeoutRef.current);
+      documentTranslateTimeoutRef.current = null;
+    }
+    if (documentAbortControllerRef.current) {
+      documentAbortControllerRef.current.abort();
+      documentAbortControllerRef.current = null;
+    }
+
+    setLoading(false);
     setInputText('');
     setOutputText('');
+    setSelectedImageFile(null);
+    setSelectedDocumentFile(null);
+    setSelectedWebsiteUrl('');
+    setOriginalWebsiteText('');
+    setTranslatedDocumentFilename('');
+    setTranslatedDocumentDownloadUrl('');
+    setError('');
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setIsOutputMicListening(false);
     setShowOutput(false);
     setFreeToolsResetTrigger((previous) => previous + 1);
   };
@@ -89,6 +443,14 @@ function PremiumPage() {
     setToneMode(item.tone);
     setShowOutput(true);
     setShowHistorySidebar(false);
+  };
+
+  const handleRestoreWebsiteOriginal = () => {
+    if (!originalWebsiteText) return;
+    setInputText(originalWebsiteText);
+    setOutputText('');
+    setShowOutput(false);
+    setError('');
   };
 
   return (
@@ -169,10 +531,9 @@ function PremiumPage() {
                 onChange={(event) => setFromLang(event.target.value)}
                 aria-label="Source language"
               >
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Spanish</option>
-                <option>French</option>
+                {SOURCE_LANGUAGES.map((language) => (
+                  <option key={language} value={language}>{language}</option>
+                ))}
               </select>
             </div>
             <button className="swap-btn" onClick={swapLanguages} type="button" title="Swap languages">
@@ -186,10 +547,9 @@ function PremiumPage() {
                 onChange={(event) => setToLang(event.target.value)}
                 aria-label="Target language"
               >
-                <option>Spanish</option>
-                <option>English</option>
-                <option>French</option>
-                <option>Hindi</option>
+                {targetLanguageOptions.map((language) => (
+                  <option key={language} value={language}>{language}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -223,20 +583,90 @@ function PremiumPage() {
             </div>
           </div>
 
-          <FreePlanTools resetTrigger={freeToolsResetTrigger} showAdvanced />
+          <FreePlanTools
+            resetTrigger={freeToolsResetTrigger}
+            showAdvanced
+            onSpeechToText={(transcript) => {
+              setInputText((previous) => (previous ? `${previous} ${transcript}` : transcript));
+              setError('');
+            }}
+            onImageSelect={(file) => {
+              setSelectedImageFile(file);
+              setSelectedDocumentFile(null);
+              setSelectedWebsiteUrl('');
+              setTranslatedDocumentFilename('');
+              setTranslatedDocumentDownloadUrl('');
+              setError('');
+            }}
+            onDocumentSelect={(file) => {
+              setSelectedDocumentFile(file);
+              setSelectedImageFile(null);
+              setSelectedWebsiteUrl('');
+              setTranslatedDocumentFilename('');
+              setTranslatedDocumentDownloadUrl('');
+              setError('');
+            }}
+            onWebsiteSelect={(url) => {
+              setSelectedWebsiteUrl(url);
+              setSelectedImageFile(null);
+              setSelectedDocumentFile(null);
+              setOriginalWebsiteText('');
+              setTranslatedDocumentFilename('');
+              setTranslatedDocumentDownloadUrl('');
+              setError('');
+            }}
+          />
+
+          {error ? <p className="free-tool-note">⚠️ {error}</p> : null}
 
           {showOutput ? (
-            <textarea
-              rows="5"
-              value={outputText}
-              readOnly
-              className="output-box"
-              style={{ marginTop: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
-            />
+            <>
+              <textarea
+                rows="5"
+                value={outputText}
+                readOnly
+                className="output-box"
+                style={{ marginTop: '1rem', backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+              />
+              <div className="free-tools-row" style={{ marginTop: '0.75rem' }}>
+                <button
+                  className={`tool-btn ${isOutputMicListening ? 'active' : ''}`}
+                  type="button"
+                  onClick={handleOutputMicToggle}
+                  aria-pressed={isOutputMicListening}
+                  title="Mic"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 14C13.66 14 15 12.66 15 11V5C15 3.34 13.66 2 12 2C10.34 2 9 3.34 9 5V11C9 12.66 10.34 14 12 14Z" fill="currentColor"/>
+                    <path d="M19 11C19 14.53 16.39 17.43 13 17.93V21H11V17.93C7.61 17.43 5 14.53 5 11H7C7 13.76 9.24 16 12 16C14.76 16 17 13.76 17 11H19Z" fill="currentColor"/>
+                  </svg>
+                  Mic
+                </button>
+                {translatedDocumentDownloadUrl ? (
+                  <a
+                    className="tool-btn"
+                    href={translatedDocumentDownloadUrl}
+                    download={translatedDocumentFilename || undefined}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Download translated document"
+                  >
+                    Download file
+                  </a>
+                ) : null}
+              </div>
+            </>
           ) : null}
 
           <div className="card-actions">
-            <button className="btn primary" onClick={handleTranslate}>Translate</button>
+            <button className="btn primary" onClick={handleTranslate} disabled={loading}>
+              {loading ? 'Translating...' : 'Translate'}
+            </button>
+            {selectedWebsiteUrl && originalWebsiteText ? (
+              <button className="btn ghost" onClick={handleRestoreWebsiteOriginal}>
+                Restore original
+              </button>
+            ) : null}
             <button className="btn ghost" onClick={handleClear}>Clear</button>
           </div>
         </div>
